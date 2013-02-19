@@ -20,4 +20,4 @@ gtktactoe.o : gtktactoe.c
 install :
 
 clean :
-	-rm -f gtk_app $(OBJ)
+	-rm -f gtktactoe $(OBJ)

@@ -4,3 +4,6 @@ gtktactoe
 
 # VIM swap files
 *.swp
+
+# Images
+*.png

@@ -1,15 +1,15 @@
 /*
- * main.c
- * This file is part of GTK-Test
+ * gtktactoe.c
+ * This file is part of GTKTacToe
  *
  * Copyright (C) 2013 - Mason Fabel
  *
- * GTK-Test is free software; you can redistribute it and/or modify
+ * GTKTacToe is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * GTK-Test is distributed in the hope that it will be useful,
+ * GTKTacToe is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -50,10 +50,6 @@ int main(int argc, char **argv) {
 	int windowWidth = 600;
 	int windowHeight = 400;
 
-	/* Holds the GTK elements */
-	GtkWindow *window;
-	GtkButton *button;
-
 	/* Initialize the signal handler function */
 	(void) signal(SIGINT, finish);
 
@@ -88,16 +84,42 @@ int main(int argc, char **argv) {
 	if(gtk_init_check(&argc, &argv)) {
 		/* GTK is good! */
 
-		/* Create the main window */
-		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		g_signal_connect(window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
-		gtk_window_resize(window, (gint) windowWidth, (gint) windowHeight);
+		/* Create GTK Objects */
+		GtkWindow *window;
+		GtkGrid *board;
+		GtkLabel *label;
+		GtkButton *cells[9];
 
-		/* Create the button */
-		button = gtk_button_new_with_label("Hello World!");
-		gtk_widget_set_valign(button, GTK_ALIGN_START);
-		gtk_widget_set_halign(button, GTK_ALIGN_START);
-		gtk_container_add(GTK_CONTAINER(window), button);
+		/* Build GTK Layout */
+
+			/* Main Window */
+			window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+			g_signal_connect(window, "delete-event", G_CALLBACK(gtk_main_quit), window);
+
+			/* TicTacToe Grid */
+			board = gtk_grid_new();
+			gtk_grid_set_row_homogeneous(board, gtk_true());
+			gtk_grid_set_column_homogeneous(board, gtk_true());
+			gtk_container_add(GTK_CONTAINER(window), board);
+
+			/* TicTacToe Turn Indicator */
+			label = gtk_label_new("Welcome to GTKTacToe");
+			gtk_grid_attach(board, label, 0, 0, 3, 1);
+
+			/* TicTacToe Cells */
+			for(i = 0; i < 9; i++) {
+				cells[i] = gtk_button_new();
+
+				if(i == 2) {
+					gtk_button_set_image(cells[i], gtk_image_new_from_file("o.png"));
+				} else if(i == 6) {
+					gtk_button_set_image(cells[i], gtk_image_new_from_file("x.png"));
+				} else {
+					gtk_button_set_image(cells[i], gtk_image_new_from_file("empty.png"));
+				}
+
+				gtk_grid_attach(board, cells[i], i % 3, (i / 3) + 1, 1, 1);
+			}
 
 		/* Show the window */
 		gtk_widget_show_all(window);

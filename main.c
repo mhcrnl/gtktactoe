@@ -34,11 +34,16 @@ static const int DEBUG = 0;
 /* Signal handler */
 static void finish(int sig);
 
+static void swap(GtkButton *theButton);
+
 int main(int argc, char **argv) {
 	int exitSignal;
+	gint windowWidth = 600;
+	gint windowHeight = 400;
 
-	/* Holds the main GTK window */
-	GtkWidget *window;
+	/* Holds the GTK elements */
+	GtkWindow *window;
+	GtkButton *button;
 
 	/* Initialize the signal handler function */
 	(void) signal(SIGINT, finish);
@@ -49,17 +54,27 @@ int main(int argc, char **argv) {
 
 		/* Create the main window */
 		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		g_signal_connect(window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
+		gtk_window_resize(window, windowWidth, windowHeight);
+
+		/* Create the button */
+		button = gtk_button_new_with_label("Hello World!");
+		gtk_widget_set_valign(button, GTK_ALIGN_START);
+		gtk_widget_set_halign(button, GTK_ALIGN_START);
+		g_signal_connect(button, "clicked", G_CALLBACK(swap), NULL);
+		gtk_container_add(GTK_CONTAINER(window), button);
 
 		/* Show the window */
-		gtk_widget_show(window);
+		gtk_widget_show_all(window);
 
 		/* Give program control to GTK */
 		gtk_main();
 
+		/* GTK main loop is done */
 		exitSignal = 0;
 	} else {
 		/* GTK failed to load */
-		printf("Unable to load GTK\n");
+		fprintf(stderr, "Unable to load GTK\n");
 		exitSignal = 1;
 	}
 
@@ -68,9 +83,13 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
+static void swap(GtkButton* theButton) {
+	gtk_button_set_label(theButton, "See ya later...");
+}
+
 static void finish(int sig) {
 	if(DEBUG) {
-		printf("\n## SIGNAL: %d\n", sig);
+		fprintf(stdout, "## SIGNAL: %d\n", sig);
 	}
 	exit(0);
 }

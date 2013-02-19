@@ -1,0 +1,6 @@
+# Binary files
+gtk_app
+*.o
+
+# VIM swap files
+*.swp

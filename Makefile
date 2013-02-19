@@ -1,19 +1,19 @@
 CC = gcc
 CFLAGS = -ansi -pedantic -Wall -Wextra -D__USE_FIXED_PROTOTYPES__ -DDBG
 GTKFLAGS = -Wl,--export-dynamic `pkg-config --cflags gtk+-3.0 gmodule-export-2.0` `pkg-config --libs gtk+-3.0 gmodule-export-2.0`
-OBJ = main.o
+OBJ = gtktactoe.o
 
-all : gtk_app
+all : gtktactoe
 
 rebuild :
 	make clean
 	make all
 
-gtk_app : $(OBJ)
-	$(CC) $(CFLAGS) -o gtk_app $(OBJ) $(GTKFLAGS)
+gtktactoe : $(OBJ)
+	$(CC) $(CFLAGS) -o gtktactoe $(OBJ) $(GTKFLAGS)
 
-main.o : main.c
-	$(CC) $(CFLAGS) -c -o main.o main.c $(GTKFLAGS)
+gtktactoe.o : gtktactoe.c
+	$(CC) $(CFLAGS) -c gtktactoe.c $(GTKFLAGS)
 
 .PHONY : install clean
 

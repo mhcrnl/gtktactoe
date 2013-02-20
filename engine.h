@@ -21,7 +21,7 @@
  */
 
 #ifndef _ENGINE_H_
-#define _ENGINE_G_
+#define _ENGINE_H_
 
 char checkForWin();
 char checkTurn();

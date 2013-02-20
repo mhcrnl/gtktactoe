@@ -37,7 +37,7 @@ int DEBUG = 0;
 
 /* Signal handlers */
 static void finish(int sig);
-static void clickEvent(void);
+static void clickEvent(GtkButton *button);
 
 /* CLI messages */
 static void displayHelp(char *name);
@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
 	int exitSignal;
 	int windowWidth = 600;
 	int windowHeight = 400;
+	char buttonLabel[4];
 
 	/* Create GTK Objects */
 	GtkWindow *window;
@@ -85,12 +86,12 @@ int main(int argc, char **argv) {
 		if(!(strcmp(argv[i], "-w") && strcmp(argv[i], "--width"))) {
 			i++;
 			if(DEBUG) printf("Setting width to %s\n", argv[i]);
-			windowWidth = sscanf("%d", argv[i]);
+			windowWidth = atoi(argv[i]);
 		}
 		if(!(strcmp(argv[i], "-h") && strcmp(argv[i], "--height"))) {
 			i++;
 			if(DEBUG) printf("Setting height to %s\n", argv[i]);
-			windowHeight = sscanf("%d", argv[i]);
+			windowHeight = atoi(argv[i]);
 		}
 	}
 
@@ -121,6 +122,8 @@ int main(int argc, char **argv) {
 			/* TicTacToe Cells */
 			for(i = 0; i < 9; i++) {
 				cells[i] = gtk_button_new();
+				sprintf(buttonLabel, "%d", i);
+				gtk_button_set_label(cells[i], buttonLabel);
 				g_signal_connect(cells[i], "clicked", G_CALLBACK(clickEvent), cells[i]);
 
 				if(i == 2) {
@@ -146,7 +149,7 @@ int main(int argc, char **argv) {
 		if(VERBOSE) printf("Closing GTK...DONE\n");
 	} else {
 		/* GTK failed to load */
-		if(VERBOSE) printf("\t\tFAILED!\n");
+		if(VERBOSE) printf("FAILED!\n");
 		fprintf(stderr, "Unable to load GTK\n");
 		exitSignal = 1;
 	}
@@ -156,8 +159,19 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-static void clickEvent(void) {
-	if(DEBUG) printf("Click!\n");
+static void clickEvent(GtkButton *button) {
+	gchar *glabel;
+	char *label;
+	int index;
+
+	glabel = gtk_button_get_label(button);
+	label = (char*) glabel;
+	index = atoi(label);
+
+	/* MAKE ENGINE CALLS HERE */
+
+	if(DEBUG) printf("Button %d was pressed\n", index);
+
 	return;
 }
 

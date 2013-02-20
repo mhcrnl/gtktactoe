@@ -83,6 +83,8 @@ int main(int argc, char **argv) {
 		if(!(strcmp(argv[i], "-D") && strcmp(argv[i], "--debug"))) {
 			printf("Entering debugging mode...\n");
 			DEBUG = 1;
+			/* Include the VERBOSE flag with the DEBUG flag */
+			VERBOSE = 1;
 		}
 		if(!(strcmp(argv[i], "-w") && strcmp(argv[i], "--width"))) {
 			i++;
@@ -117,8 +119,7 @@ int main(int argc, char **argv) {
 			gtk_container_add(GTK_CONTAINER(window), board);
 
 			/* TicTacToe Turn Indicator */
-			sprintf(labelText, "%c's turn", checkTurn());
-			label = gtk_label_new(labelText);
+			label = gtk_label_new(NULL);
 			gtk_grid_attach(board, label, 0, 0, 3, 1);
 
 			/* TicTacToe Cells */
@@ -128,7 +129,6 @@ int main(int argc, char **argv) {
 				gtk_button_set_label(cells[i], buttonLabel);
 				g_signal_connect(cells[i], "clicked", G_CALLBACK(clickEvent), cells[i]);
 				gtk_button_set_image(cells[i], gtk_image_new_from_file("empty.png"));
-
 				gtk_grid_attach(board, cells[i], i % 3, (i / 3) + 1, 1, 1);
 			}
 
@@ -139,10 +139,10 @@ int main(int argc, char **argv) {
 		/* Main loop */
 		while(checkForWin() == ' ') {
 			gtk_main_iteration();
-			sprintf(labelText, "%c's turn", checkTurn());
+			sprintf(labelText, "%c's turn", toupper(checkTurn()));
 			gtk_label_set_text(label, labelText);
 		}
-		if(VERBOSE) printf("%c's won!\n", checkForWin());
+		if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
 
 		/* GTK main loop is done */
 		exitSignal = 0;
@@ -165,7 +165,7 @@ static void clickEvent(GtkButton *button) {
 	char filename[20];
 	int index, row, col;
 
-	player = checkTurn();
+	player = toupper(checkTurn());
 	label = gtk_button_get_label(button);
 	index = atoi(label);
 	row = index / 3;
@@ -175,7 +175,7 @@ static void clickEvent(GtkButton *button) {
 
 	if(selectSquare(row, col)) {
 		if(VERBOSE) printf("%c claims row %d, column %d\n", player, row, col);
-		if(VERBOSE) printf("It is now %c's turn\n", checkTurn());
+		if(VERBOSE) printf("It is now %c's turn\n", toupper(checkTurn()));
 
 		sprintf(filename, "%c.png", checkTurn());
 		if(DEBUG) printf("Setting button %d's image to %s\n", index, filename);

@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "engine.h"
+
 /* Set DEBUG mode from compiler flags */
 #ifdef DBG
 static const int DEBUG = 1;
@@ -49,6 +51,12 @@ int main(int argc, char **argv) {
 	int exitSignal;
 	int windowWidth = 600;
 	int windowHeight = 400;
+
+	/* Create GTK Objects */
+	GtkWindow *window;
+	GtkGrid *board;
+	GtkLabel *label;
+	GtkButton *cells[9];
 
 	/* Initialize the signal handler function */
 	(void) signal(SIGINT, finish);
@@ -80,17 +88,15 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	printf("Loading GTK...");
+
 	/* Attempt to start GTK */
 	if(gtk_init_check(&argc, &argv)) {
 		/* GTK is good! */
-
-		/* Create GTK Objects */
-		GtkWindow *window;
-		GtkGrid *board;
-		GtkLabel *label;
-		GtkButton *cells[9];
+		printf("DONE\n");
 
 		/* Build GTK Layout */
+		printf("Building Interface...");
 
 			/* Main Window */
 			window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -122,6 +128,8 @@ int main(int argc, char **argv) {
 			}
 
 		/* Show the window */
+		printf("DONE\n");
+		printf("Launching %s\n", argv[0]);
 		gtk_widget_show_all(window);
 
 		/* Give program control to GTK */
@@ -129,8 +137,10 @@ int main(int argc, char **argv) {
 
 		/* GTK main loop is done */
 		exitSignal = 0;
+		printf("Closing GTK...DONE\n");
 	} else {
 		/* GTK failed to load */
+		printf("\t\tFAILED!\n");
 		fprintf(stderr, "Unable to load GTK\n");
 		exitSignal = 1;
 	}

@@ -26,17 +26,14 @@
 
 #include "engine.h"
 
-/* Set DEBUG mode from compiler flags */
-#ifdef DBG
-static const int DEBUG = 1;
-#else
-static const int DEBUG = 0;
-#endif
-
 /* Set version information */
 static const int VERSION = 0;
 static const int MAJ_REV = 0;
 static const int MIN_REV = 1;
+
+/* Set application flags */
+int VERBOSE = 0;
+int DEBUG = 0;
 
 /* Signal handlers */
 static void finish(int sig);
@@ -71,12 +68,20 @@ int main(int argc, char **argv) {
 			displayHelp(argv[0]);
 			finish(0);
 		}
-		if(!(strcmp(argv[i], "-v") && strcmp(argv[i], "--version"))) {
+		if(!(strcmp(argv[i], "-V") && strcmp(argv[i], "--version"))) {
 			displayVersion(argv[0]);
 			finish(0);
 		}
 
 		/* Check for application arguments */
+		if(!(strcmp(argv[i], "-v") && strcmp(argv[i], "--verbose"))) {
+			if(DEBUG) printf("Maximum verbosity\n");
+			VERBOSE = 1;
+		}
+		if(!(strcmp(argv[i], "-D") && strcmp(argv[i], "--debug"))) {
+			printf("Entering debugging mode...\n");
+			DEBUG = 1;
+		}
 		if(!(strcmp(argv[i], "-w") && strcmp(argv[i], "--width"))) {
 			i++;
 			if(DEBUG) printf("Setting width to %s\n", argv[i]);
@@ -89,15 +94,15 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	printf("Loading GTK...");
+	if(VERBOSE) printf("Loading GTK...");
 
 	/* Attempt to start GTK */
 	if(gtk_init_check(&argc, &argv)) {
 		/* GTK is good! */
-		printf("DONE\n");
+		if(VERBOSE) printf("DONE\n");
 
 		/* Build GTK Layout */
-		printf("Building Interface...");
+		if(VERBOSE) printf("Building Interface...");
 
 			/* Main Window */
 			window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -130,8 +135,7 @@ int main(int argc, char **argv) {
 			}
 
 		/* Show the window */
-		printf("DONE\n");
-		printf("Launching %s\n", argv[0]);
+		if(VERBOSE) printf("DONE\nLaunching %s\n", argv[0]);
 		gtk_widget_show_all(window);
 
 		/* Give program control to GTK */
@@ -139,10 +143,10 @@ int main(int argc, char **argv) {
 
 		/* GTK main loop is done */
 		exitSignal = 0;
-		printf("Closing GTK...DONE\n");
+		if(VERBOSE) printf("Closing GTK...DONE\n");
 	} else {
 		/* GTK failed to load */
-		printf("\t\tFAILED!\n");
+		if(VERBOSE) printf("\t\tFAILED!\n");
 		fprintf(stderr, "Unable to load GTK\n");
 		exitSignal = 1;
 	}
@@ -153,7 +157,7 @@ int main(int argc, char **argv) {
 }
 
 static void clickEvent(void) {
-	printf("Click!\n");
+	if(DEBUG) printf("Click!\n");
 	return;
 }
 
@@ -161,9 +165,11 @@ static void displayHelp(char *name) {
 	printf("Usage: %s [-w] [-h] [OPTIONS]...\n", name);
 	printf("Plays %s, a GTK+ TicTacToe game\n", name);
 	printf("\n  -?. --help\t\tdisplay this help and exit\n");
-	printf("  -v, --version\t\toutput version information and exit");
+	printf("  -V, --version\t\toutput version information and exit\n");
 	printf("  -h, --height\t\tset the window height\n");
 	printf("  -w, --width\t\tset the window width\n");
+	printf("  -v, --verbose\t\trun with maximum verbosity\n");
+	printf("  -D, --debug\t\trun in debugging mode\n");
 
 	return;
 }
@@ -180,8 +186,6 @@ static void displayVersion(char *name) {
 }
 
 static void finish(int sig) {
-	if(DEBUG) {
-		fprintf(stdout, "SIGNAL: %d\n", sig);
-	}
+	if(DEBUG) fprintf(stdout, "SIGNAL: %d\n", sig);
 	exit(0);
 }

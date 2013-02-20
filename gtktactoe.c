@@ -38,8 +38,9 @@ static const int VERSION = 0;
 static const int MAJ_REV = 0;
 static const int MIN_REV = 1;
 
-/* Signal handler */
+/* Signal handlers */
 static void finish(int sig);
+static void clickEvent(void);
 
 /* CLI messages */
 static void displayHelp(char *name);
@@ -115,6 +116,7 @@ int main(int argc, char **argv) {
 			/* TicTacToe Cells */
 			for(i = 0; i < 9; i++) {
 				cells[i] = gtk_button_new();
+				g_signal_connect(cells[i], "clicked", G_CALLBACK(clickEvent), cells[i]);
 
 				if(i == 2) {
 					gtk_button_set_image(cells[i], gtk_image_new_from_file("o.png"));
@@ -148,6 +150,11 @@ int main(int argc, char **argv) {
 	/* End the program */
 	finish(exitSignal);
 	return 0;
+}
+
+static void clickEvent(void) {
+	printf("Click!\n");
+	return;
 }
 
 static void displayHelp(char *name) {

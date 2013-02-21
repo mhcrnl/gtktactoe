@@ -177,7 +177,7 @@ static void clickEvent(GtkButton *button) {
 		if(VERBOSE) printf("%c claims row %d, column %d\n", player, row, col);
 		if(VERBOSE) printf("It is now %c's turn\n", toupper(checkTurn()));
 
-		sprintf(filename, "%c.png", checkTurn());
+		sprintf(filename, "%c.png", player);
 		if(DEBUG) printf("Setting button %d's image to %s\n", index, filename);
 		gtk_button_set_image(button, gtk_image_new_from_file(filename));
 	}

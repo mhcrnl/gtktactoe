@@ -38,6 +38,7 @@ int DEBUG = 0;
 /* Button callback structures */
 struct Cell {
 	GtkButton *button;
+	gulong handler;
 	int index;
 };
 
@@ -133,7 +134,7 @@ int main(int argc, char **argv) {
 			for(i = 0; i < 9; i++) {
 				cells[i].button = gtk_button_new();
 				cells[i].index = i;
-				g_signal_connect(cells[i].button, "clicked", G_CALLBACK(clickEvent), &cells[i]);
+				cells[i].handler = g_signal_connect(cells[i].button, "clicked", G_CALLBACK(clickEvent), &cells[i]);
 				gtk_button_set_image(cells[i].button, gtk_image_new_from_file("sprites/empty.png"));
 				gtk_grid_attach(board, cells[i].button, i % 3, (i / 3) + 1, 1, 1);
 				gtk_widget_show(cells[i].button);
@@ -149,7 +150,19 @@ int main(int argc, char **argv) {
 			sprintf(labelText, "%c's turn", toupper(checkTurn()));
 			gtk_label_set_text(label, labelText);
 		}
+
+		/* Display the victor */
 		if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
+		sprintf(labelText, "%c's won!", toupper(checkForWin()));
+		gtk_label_set_text(label, labelText);
+
+		/* Disconnect clickEvent handlers */
+		for(i = 0; i < 9; i++) {
+			g_signal_handler_disconnect(cells[i].button, cells[i].handler);
+		}
+
+		/* Loop forever */
+		gtk_main();
 
 		/* GTK main loop is done */
 		exitSignal = 0;

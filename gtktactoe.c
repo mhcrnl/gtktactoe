@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
 				cells[i].button = gtk_button_new();
 				cells[i].index = i;
 				cells[i].handler = g_signal_connect(cells[i].button, "clicked", G_CALLBACK(clickEvent), &cells[i]);
-				gtk_button_set_image(cells[i].button, gtk_image_new_from_file("sprites/empty.png"));
+				gtk_button_set_image(cells[i].button, gtk_image_new_from_file("./sprites/empty.png"));
 				gtk_grid_attach(board, cells[i].button, i % 3, (i / 3) + 1, 1, 1);
 				gtk_widget_show(cells[i].button);
 			}
@@ -200,7 +200,7 @@ static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 		if(VERBOSE) printf("%c claims row %d, column %d\n", player, row, col);
 		if(VERBOSE) printf("It is now %c's turn\n", toupper(checkTurn()));
 
-		sprintf(filename, "sprites/%c.png", player);
+		sprintf(filename, "./sprites/%c.png", player);
 		if(DEBUG) printf("Setting button %d's image to %s\n", index, filename);
 		gtk_button_set_image(button, gtk_image_new_from_file(filename));
 	}

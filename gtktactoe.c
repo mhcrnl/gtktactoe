@@ -28,8 +28,8 @@
 
 /* Set version information */
 static const int VERSION = 0;
-static const int MAJ_REV = 0;
-static const int MIN_REV = 1;
+static const int MAJ_REV = 1;
+static const int MIN_REV = 0;
 
 /* Set application flags */
 int VERBOSE = 0;
@@ -92,6 +92,8 @@ int main(int argc, char **argv) {
 			/* Include the VERBOSE flag with the DEBUG flag */
 			VERBOSE = 1;
 		}
+
+		/* --- NOT IMPLEMENTED
 		if(!(strcmp(argv[i], "-w") && strcmp(argv[i], "--width"))) {
 			i++;
 			if(DEBUG) printf("Setting width to %s\n", argv[i]);
@@ -102,6 +104,7 @@ int main(int argc, char **argv) {
 			if(DEBUG) printf("Setting height to %s\n", argv[i]);
 			windowHeight = atoi(argv[i]);
 		}
+		--- */
 	}
 
 	if(VERBOSE) printf("Loading GTK...");
@@ -210,8 +213,6 @@ static void displayHelp(char *name) {
 	printf("Plays %s, a GTK+ TicTacToe game\n", name);
 	printf("\n  -?. --help\t\tdisplay this help and exit\n");
 	printf("  -V, --version\t\toutput version information and exit\n");
-	printf("  -h, --height\t\tset the window height\n");
-	printf("  -w, --width\t\tset the window width\n");
 	printf("  -v, --verbose\t\trun with maximum verbosity\n");
 	printf("  -D, --debug\t\trun in debugging mode\n");
 

@@ -20,6 +20,8 @@ engine.o : engine.c engine.h
 .PHONY : install clean
 
 install :
+	mkdir -p /usr/games/
+	cp ./gtktactoe /usr/games/
 
 clean :
 	-rm -f gtktactoe $(OBJ)

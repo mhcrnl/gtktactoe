@@ -23,13 +23,18 @@ make clean
 make
 ```
 
-A long list of warnings will spew forth, but do not fear: this is normal (for now). If you want, use `ls -l` to check for the `gtktactoe` executable.
+A long list of warnings will spew forth, but do not fear: this is normal (for now). If you want, use `ls -l` to check for the `gtktactoe` executable. Now, install gtktactoe. You will need to be root for this step.
+```
+[sudo] make install
+```
+
+The binary will now be in /usr/bin and the game data in /usr/share/gtktactoe.
 
 
 Use
 ---
 
-To play gtktactoe, simply run `./gtktactoe` from the `gtktactoe` directory.
+To play gtktactoe, simply run `gtktactoe` from a terminal in X (a.k.a xterm or something comprable).
 
 To gtktactoe also supports different command line options. The full list can be found by running `gtktactoe -?`.
 

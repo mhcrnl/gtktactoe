@@ -35,9 +35,15 @@ static const int MIN_REV = 1;
 int VERBOSE = 0;
 int DEBUG = 0;
 
+/* Button callback structures */
+struct Cell {
+	GtkButton *button;
+	int index;
+};
+
 /* Signal handlers */
 static void finish(int sig);
-static void clickEvent(GtkButton *button);
+static void clickEvent(GtkWidget *emitter, struct Cell *cell);
 
 /* CLI messages */
 static void displayHelp(char *name);
@@ -49,14 +55,13 @@ int main(int argc, char **argv) {
 	int exitSignal;
 	int windowWidth = 600;
 	int windowHeight = 400;
-	char buttonLabel[4];
 	char labelText[50];
 
 	/* Create GTK Objects */
 	GtkWindow *window;
 	GtkGrid *board;
 	GtkLabel *label;
-	GtkButton *cells[9];
+	struct Cell cells[9];
 
 	/* Initialize the signal handler function */
 	(void) signal(SIGINT, finish);
@@ -117,24 +122,26 @@ int main(int argc, char **argv) {
 			gtk_grid_set_row_homogeneous(board, gtk_true());
 			gtk_grid_set_column_homogeneous(board, gtk_true());
 			gtk_container_add(GTK_CONTAINER(window), board);
+			gtk_widget_show(board);
 
 			/* TicTacToe Turn Indicator */
 			label = gtk_label_new(NULL);
 			gtk_grid_attach(board, label, 0, 0, 3, 1);
+			gtk_widget_show(label);
 
 			/* TicTacToe Cells */
 			for(i = 0; i < 9; i++) {
-				cells[i] = gtk_button_new();
-				sprintf(buttonLabel, "%d", i);
-				gtk_button_set_label(cells[i], buttonLabel);
-				g_signal_connect(cells[i], "clicked", G_CALLBACK(clickEvent), cells[i]);
-				gtk_button_set_image(cells[i], gtk_image_new_from_file("empty.png"));
-				gtk_grid_attach(board, cells[i], i % 3, (i / 3) + 1, 1, 1);
+				cells[i].button = gtk_button_new();
+				cells[i].index = i;
+				g_signal_connect(cells[i].button, "clicked", G_CALLBACK(clickEvent), &cells[i]);
+				gtk_button_set_image(cells[i].button, gtk_image_new_from_file("sprites/empty.png"));
+				gtk_grid_attach(board, cells[i].button, i % 3, (i / 3) + 1, 1, 1);
+				gtk_widget_show(cells[i].button);
 			}
 
 		/* Show the window */
 		if(VERBOSE) printf("DONE\nLaunching %s\n", argv[0]);
-		gtk_widget_show_all(window);
+		gtk_widget_show(window);
 
 		/* Main loop */
 		while(checkForWin() == ' ') {
@@ -159,15 +166,15 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-static void clickEvent(GtkButton *button) {
+static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 	char player;
-	char *label;
 	char filename[20];
 	int index, row, col;
+	GtkButton *button;
 
 	player = toupper(checkTurn());
-	label = gtk_button_get_label(button);
-	index = atoi(label);
+	index = cell->index;
+	button = cell->button;
 	row = index / 3;
 	col = index % 3;
 
@@ -177,7 +184,7 @@ static void clickEvent(GtkButton *button) {
 		if(VERBOSE) printf("%c claims row %d, column %d\n", player, row, col);
 		if(VERBOSE) printf("It is now %c's turn\n", toupper(checkTurn()));
 
-		sprintf(filename, "%c.png", player);
+		sprintf(filename, "sprites/%c.png", player);
 		if(DEBUG) printf("Setting button %d's image to %s\n", index, filename);
 		gtk_button_set_image(button, gtk_image_new_from_file(filename));
 	}

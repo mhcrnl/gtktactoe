@@ -13,7 +13,7 @@ Compilation
 
 To build gtktactoe, you first need to clone this git repository:
 ```
-git clone https://github.com/mfabel/gtktactoe.git
+git clone git://github.com/mfabel/gtktactoe.git
 ```
 
 Then, move into the new gtktactoe directory and run the make utility:

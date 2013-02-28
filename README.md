@@ -11,12 +11,17 @@ GtkTacToe is my entry into GUI programming in general, and the GTK+-3.0 library 
 Compilation
 -----------
 
-To build gtktactoe, you first need to clone this git repository:
+To build gtktactoe, you first need to install the dependencies.
+```
+[sudo] apt-get install libgtk-3-dev
+```
+
+Now, get the source code by cloning this git repository.
 ```
 git clone git://github.com/mfabel/gtktactoe.git
 ```
 
-Then, move into the new gtktactoe directory and run the make utility:
+Then, move into the new gtktactoe directory and run the make utility.
 ```
 cd gtktactoe
 make clean

@@ -29,7 +29,7 @@
 /* Set version information */
 static const int VERSION = 0;
 static const int MAJ_REV = 1;
-static const int MIN_REV = 0;
+static const int MIN_REV = 2;
 
 /* Set application flags */
 int VERBOSE = 0;

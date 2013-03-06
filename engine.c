@@ -25,20 +25,13 @@
 
 #include "engine.h"
 
-/* Set DEBUG mode from compiler flags */
-#ifdef DBG
-static const int DEBUG = 1;
-#else
-static const int DEBUG = 0;
-#endif
-
 static const char turnChars[3] = {'x', 'o', ' '};
 
 static int turn = 0;
-static int board[3][3] = { {3, 3, 3}, {3, 3, 3}, {3, 3, 3} };
+static int board[3][3] = { {2, 2, 2}, {2, 2, 2}, {2, 2, 2} };
 
 static int isTaken(int row, int col) {
-	return board[row][col] != 3;
+	return board[row][col] != 2;
 }
 
 static int isX(int row, int col) {
@@ -49,7 +42,24 @@ static int isO(int row, int col) {
 	return board[row][col] == 1;
 }
 
-char checkTurn() {
+void initEngine(void) {
+	/* Holds the current cell's position */
+	int x, y;
+
+	/* Reset turn counter */
+	turn = 0;
+
+	/* Reset board */
+	for(x = 0; x < 3; x++) {
+		for(y = 0; y < 3; y++) {
+			board[x][y] = 2;
+		}
+	}
+
+	return;
+}
+
+char checkTurn(void) {
 	return turnChars[turn];
 }
 
@@ -76,16 +86,16 @@ int selectSquare(int row, int col) {
 	return result;
 }
 
-char checkForWin() {
+char checkForWin(void) {
 	int i = 0;
 	char win = ' ';
 
 	/* Loop until a win is found or all rows and columns have been checked */
 	while(i < 3 && win == ' ') {
 		/* Check for rows */
-		if((board[i][0] != 3) && (board[i][0] == board[i][1]) && (board[i][0] == board[i][2])) win = turnChars[board[i][0]];
+		if((board[i][0] != 2) && (board[i][0] == board[i][1]) && (board[i][0] == board[i][2])) win = turnChars[board[i][0]];
 		/* Check for columns */
-		else if((board[0][i] != 3) && (board[0][i] == board[1][i]) && (board[0][i] == board[2][i])) win = turnChars[board[0][i]];
+		else if((board[0][i] != 2) && (board[0][i] == board[1][i]) && (board[0][i] == board[2][i])) win = turnChars[board[0][i]];
 
 		/* Increment row/column counter */
 		i++;
@@ -94,9 +104,9 @@ char checkForWin() {
 	/* Check diagonals if necessary */
 	if(win == ' ') {
 		/* Top left to bottom right */
-		if((board[0][0] != 3) && (board[0][0] == board[1][1]) && (board[0][0] == board[2][2])) win = turnChars[board[0][0]];
+		if((board[0][0] != 2) && (board[0][0] == board[1][1]) && (board[0][0] == board[2][2])) win = turnChars[board[0][0]];
 		/* Bottom left to top right */
-		else if((board[2][0] != 3) && (board[2][0] == board[1][1]) && (board[2][0] == board [0][2])) win = turnChars[board[2][0]];
+		else if((board[2][0] != 2) && (board[2][0] == board[1][1]) && (board[2][0] == board [0][2])) win = turnChars[board[2][0]];
 	}
 
 	return win;

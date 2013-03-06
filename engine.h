@@ -23,8 +23,9 @@
 #ifndef _ENGINE_H_
 #define _ENGINE_H_
 
-char checkForWin();
-char checkTurn();
+void initEngine(void);
+char checkForWin(void);
+char checkTurn(void);
 int selectSquare(int row, int col);
 
 #endif /* _ENGINE_H_ */

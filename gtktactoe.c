@@ -144,6 +144,12 @@ int main(int argc, char **argv) {
 				gtk_widget_show(cells[i].button);
 			}
 
+			if(VERBOSE) printf("DONE\n");
+
+		/* Initialize the game engine */
+		if(VERBOSE) printf("Initializing Engine...");
+		initEngine();
+
 		/* Show the window */
 		if(VERBOSE) printf("DONE\nLaunching %s\n", argv[0]);
 		gtk_widget_show(window);

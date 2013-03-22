@@ -59,4 +59,4 @@ This project is pretty simple internally. The program consists of two files.
 Authors
 -------
 
-Written by Mason Fabel on February 26, 2013
+Written by Mason Fabel in February, 2013.

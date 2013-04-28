@@ -109,5 +109,10 @@ char checkForWin(void) {
 		else if((board[2][0] != 2) && (board[2][0] == board[1][1]) && (board[2][0] == board [0][2])) win = turnChars[board[2][0]];
 	}
 
+	/* Check for tie if necessary */
+	if(win == ' ') {
+		if((board[0][0] != 2) && (board[0][1] != 2) && (board[0][2] != 2) && (board[1][0] != 2) && (board[1][1] != 2) && (board[1][2] != 2) && (board[2][0] != 2) && (board[2][1] != 2) && (board[2][2] != 2)) win = 't';
+	}
+
 	return win;
 }

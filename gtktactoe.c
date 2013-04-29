@@ -162,9 +162,14 @@ int main(int argc, char **argv) {
 		}
 
 		/* Display the victor */
-		if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
-		sprintf(labelText, "%c's won!", toupper(checkForWin()));
-		gtk_label_set_text(label, labelText);
+		if(checkForWin() != 't') {
+			if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
+			sprintf(labelText, "%c's won!", toupper(checkForWin()));
+			gtk_label_set_text(label, labelText);
+		} else {
+			if(VERBOSE) printf("Tie!");
+			gtk_label_set_text(label, "Tie!");
+		}
 
 		/* Disconnect clickEvent handlers */
 		for(i = 0; i < 9; i++) {

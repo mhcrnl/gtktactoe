@@ -87,7 +87,7 @@ int selectSquare(int row, int col) {
 }
 
 char checkForWin(void) {
-	int i = 0;
+	int x, y, i = 0;
 	char win = ' ';
 
 	/* Loop until a win is found or all rows and columns have been checked */
@@ -111,7 +111,17 @@ char checkForWin(void) {
 
 	/* Check for tie if necessary */
 	if(win == ' ') {
-		if((board[0][0] != 2) && (board[0][1] != 2) && (board[0][2] != 2) && (board[1][0] != 2) && (board[1][1] != 2) && (board[1][2] != 2) && (board[2][0] != 2) && (board[2][1] != 2) && (board[2][2] != 2)) win = 't';
+		for(x = 0; x < 3; x++) {
+			for(y = 0; y < 3; y ++) {
+				if(board[x][y] != 2) {
+					continue;
+				} else {
+					return win;
+				}
+			}
+		}
+
+		win = 't';
 	}
 
 	return win;

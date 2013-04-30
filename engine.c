@@ -112,13 +112,8 @@ char checkForWin(void) {
 	/* Check for tie if necessary */
 	if(win == ' ') {
 		for(x = 0; x < 3; x++) {
-			for(y = 0; y < 3; y ++) {
-				if(board[x][y] != 2) {
-					continue;
-				} else {
-					return win;
-				}
-			}
+			for(y = 0; y < 3; y++) 
+				if(board[x][y] == 2) return win;
 		}
 
 		win = 't';

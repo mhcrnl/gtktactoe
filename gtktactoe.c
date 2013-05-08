@@ -45,6 +45,7 @@ struct Cell {
 /* Signal handlers */
 static void finish(int sig);
 static void clickEvent(GtkWidget *emitter, struct Cell *cell);
+static void newGameEvent(GtkWidget *emitter, int *newGame);
 
 /* CLI messages */
 static void displayHelp(char *name);
@@ -53,16 +54,25 @@ static void displayVersion(char *name);
 int main(int argc, char **argv) {
 	/* Declare internal variables */
 	int i;
-	int exitSignal;
 	int windowWidth = 600;
 	int windowHeight = 400;
+	int newGame = 0;
 	char labelText[50];
 
 	/* Create GTK Objects */
 	GtkWindow *window;
+	GtkWidget *vBox;
+	GtkWidget *menubar;
+	GtkWidget *filemenu;
+	GtkWidget *file;
+	GtkWidget *newGameButton;
+	GtkWidget *quitButton;
 	GtkGrid *board;
 	GtkLabel *label;
 	struct Cell cells[9];
+
+	/* Keyboard Shortcuts */
+	GtkAccelGroup *accel_group;
 
 	/* Initialize the signal handler function */
 	(void) signal(SIGINT, finish);
@@ -121,17 +131,40 @@ int main(int argc, char **argv) {
 			window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 			g_signal_connect(window, "delete-event", G_CALLBACK(finish), 0);
 
+			/* VBox */
+			vBox = gtk_vbox_new(FALSE, 0);
+			gtk_container_add(GTK_CONTAINER(window), vBox);
+
+			/* Menubar */
+			menubar = gtk_menu_bar_new();
+			filemenu = gtk_menu_new();
+
+			accel_group = gtk_accel_group_new();
+			gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+
+			file = gtk_menu_item_new_with_mnemonic("_Game");
+			newGameButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, accel_group);
+			quitButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, accel_group);
+
+			gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
+			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), newGameButton);
+			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), gtk_separator_menu_item_new());
+			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), quitButton);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
+			gtk_box_pack_start(GTK_BOX(vBox), menubar, FALSE, FALSE, 0);
+
+			g_signal_connect(newGameButton, "activate", G_CALLBACK(newGameEvent), &newGame);
+			g_signal_connect(quitButton, "activate", G_CALLBACK(finish), 0);
+
 			/* TicTacToe Grid */
 			board = gtk_grid_new();
 			gtk_grid_set_row_homogeneous(board, gtk_true());
 			gtk_grid_set_column_homogeneous(board, gtk_true());
-			gtk_container_add(GTK_CONTAINER(window), board);
-			gtk_widget_show(board);
+			gtk_container_add(GTK_CONTAINER(vBox), board);
 
 			/* TicTacToe Turn Indicator */
 			label = gtk_label_new(NULL);
 			gtk_grid_attach(board, label, 0, 0, 3, 1);
-			gtk_widget_show(label);
 
 			/* TicTacToe Cells */
 			for(i = 0; i < 9; i++) {
@@ -141,8 +174,9 @@ int main(int argc, char **argv) {
 				sprintf(labelText, "%s/share/gtktactoe/sprites/empty.png", PATH);
 				gtk_button_set_image(cells[i].button, gtk_image_new_from_file(labelText));
 				gtk_grid_attach(board, cells[i].button, i % 3, (i / 3) + 1, 1, 1);
-				gtk_widget_show(cells[i].button);
 			}
+
+			gtk_widget_show_all(window);
 
 			if(VERBOSE) printf("DONE\n");
 
@@ -155,42 +189,54 @@ int main(int argc, char **argv) {
 		gtk_widget_show(window);
 
 		/* Main loop */
-		while(checkForWin() == ' ') {
-			gtk_main_iteration();
-			sprintf(labelText, "%c's turn", toupper(checkTurn()));
-			gtk_label_set_text(label, labelText);
+		while(1) {
+			while(checkForWin() == ' ' && newGame == 0) {
+				gtk_main_iteration();
+				sprintf(labelText, "%c's turn", toupper(checkTurn()));
+				gtk_label_set_text(label, labelText);
+			}
+
+			if(newGame == 0) {
+				/* Display the victor */
+				if(checkForWin() != 't') {
+					if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
+					sprintf(labelText, "%c's won!", toupper(checkForWin()));
+					gtk_label_set_text(label, labelText);
+				} else {
+					if(VERBOSE) printf("Tie!");
+					gtk_label_set_text(label, "Tie!");
+				}
+
+				/* Turn off the sensitivity of the cells */
+				for(i = 0; i < 9; i++) {
+					gtk_widget_set_sensitive(cells[i].button, FALSE);
+				}
+
+				/* Wait for newGame to change */
+				while(newGame == 0) gtk_main_iteration();
+			}
+
+			/* Reset the images */
+			for(i = 0; i < 9; i++) {
+				sprintf(labelText, "%s/share/gtktactoe/sprites/empty.png", PATH);
+                                gtk_button_set_image(cells[i].button, gtk_image_new_from_file(labelText));
+			}
+
+			/* Make the cells sensitive again */
+			for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, TRUE);
+
+			/* Reset */
+			newGame = 0;
+
+			initEngine();
 		}
-
-		/* Display the victor */
-		if(checkForWin() != 't') {
-			if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
-			sprintf(labelText, "%c's won!", toupper(checkForWin()));
-			gtk_label_set_text(label, labelText);
-		} else {
-			if(VERBOSE) printf("Tie!");
-			gtk_label_set_text(label, "Tie!");
-		}
-
-		/* Disconnect clickEvent handlers */
-		for(i = 0; i < 9; i++) {
-			g_signal_handler_disconnect(cells[i].button, cells[i].handler);
-		}
-
-		/* Loop forever */
-		gtk_main();
-
-		/* GTK main loop is done */
-		exitSignal = 0;
-		if(VERBOSE) printf("Closing GTK...DONE\n");
 	} else {
 		/* GTK failed to load */
 		if(VERBOSE) printf("FAILED!\n");
 		fprintf(stderr, "Unable to load GTK\n");
-		exitSignal = 1;
+		finish(1);
 	}
 
-	/* End the program */
-	finish(exitSignal);
 	return 0;
 }
 
@@ -215,8 +261,14 @@ static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 		sprintf(filename, "%s/share/gtktactoe/sprites/%c.png", PATH, player);
 		if(DEBUG) printf("Setting button %d's image to %s\n", index, filename);
 		gtk_button_set_image(button, gtk_image_new_from_file(filename));
+		gtk_widget_set_sensitive(button, FALSE);
 	}
 
+	return;
+}
+
+static void newGameEvent(GtkWidget *emitter, int *newGame) {
+	*newGame = 1;
 	return;
 }
 
@@ -243,6 +295,7 @@ static void displayVersion(char *name) {
 }
 
 static void finish(int sig) {
+	if(VERBOSE && sig == 0) printf("Closing GTK...DONE\n");
 	if(DEBUG) fprintf(stdout, "SIGNAL: %d\n", sig);
 	exit(0);
 }

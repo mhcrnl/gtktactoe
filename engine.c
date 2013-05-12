@@ -30,16 +30,19 @@ static const char turnChars[3] = {'x', 'o', ' '};
 static int turn = 0;
 static int board[3][3] = { {2, 2, 2}, {2, 2, 2}, {2, 2, 2} };
 
+static const int X = 0;
+static const int O = 1;
+
 static int isTaken(int row, int col) {
 	return board[row][col] != 2;
 }
 
 static int isX(int row, int col) {
-	return board[row][col] == 0;
+	return board[row][col] == X;
 }
 
 static int isO(int row, int col) {
-	return board[row][col] == 1;
+	return board[row][col] == O;
 }
 
 void initEngine(void) {
@@ -120,4 +123,78 @@ char checkForWin(void) {
 	}
 
 	return win;
+}
+
+static int indexToBoardValue(int index) {
+	int row, col;
+
+	row = index / 3;
+	col = index % 3;
+
+	return board[row][col];
+}
+
+static int winPossibility(int player) {
+	int i;
+	/* Horizontal Check */
+	for(i = 0; i < 7; i = i + 3) {
+		if((indexToBoardValue(i) == 2) && (indexToBoardValue(i + 1) == player) && (indexToBoardValue(i + 2) == player)) return i;
+		if((indexToBoardValue(i) == player) && (indexToBoardValue(i + 1) == 2) && (indexToBoardValue(i + 2) == player)) return i + 1;
+		if((indexToBoardValue(i) == player) && (indexToBoardValue(i + 1) == player) && (indexToBoardValue(i + 2) == 2)) return i + 2;
+	}
+
+	/* Vertical Check */
+	for(i = 0; i < 3; i++) {
+		if((indexToBoardValue(i) == 2) && (indexToBoardValue(i + 3) == player) && (indexToBoardValue(i + 6) == player)) return i;
+		if((indexToBoardValue(i) == player) && (indexToBoardValue(i + 3) == 2) && (indexToBoardValue(i + 6) == player)) return i + 3;
+		if((indexToBoardValue(i) == player) && (indexToBoardValue(i + 3) == player) && (indexToBoardValue(i + 6) == 2)) return i + 6;
+	}
+
+	/* Diagonal Check */
+	/* (There is almost certainly a better way to do this) */
+
+	/* Top left to bottom right */
+	if((indexToBoardValue(0) == 2) && (indexToBoardValue(4) == player) && (indexToBoardValue(8) == player)) return 0;
+	if((indexToBoardValue(0) == player) && (indexToBoardValue(4) == 2) && (indexToBoardValue(8) == player)) return 4;
+	if((indexToBoardValue(0) == player) && (indexToBoardValue(4) == player) && (indexToBoardValue(8) == 2)) return 8;
+
+	/* Top right to botton left */
+	if((indexToBoardValue(2) == 2) && (indexToBoardValue(4) == player) && (indexToBoardValue(6) == player)) return 2;
+	if((indexToBoardValue(2) == player) && (indexToBoardValue(4) == 2) && (indexToBoardValue(6) == player)) return 4;
+	if((indexToBoardValue(2) == player) && (indexToBoardValue(4) == player) && (indexToBoardValue(6) == 2)) return 6;
+
+	return -1;
+}
+
+int rowColToIndex(int row, int col) {
+	int board[3][3] = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
+	return board[row][col];
+}
+
+int getBestIndex(void) {
+	int index;
+	int x, y;
+
+	/* Check to see if the computer can win on this turn */
+	index = winPossibility(O);
+
+	/* If the computer cannot win, check to see if the player can win on his/her next turn */
+	if(index == -1) index = winPossibility(X);
+
+	/* If the player cannot win on his or her next turn, check for a "split" */
+	if(index == -1) {
+		if(((indexToBoardValue(0) == X) && (indexToBoardValue(8) == X)) || ((indexToBoardValue(6) == X) && (indexToBoardValue(2) == X))) {
+			if(isTaken(0, 1)) index = 7;
+			else index = 1;
+		}
+	} 
+
+	if(index == -1) { 
+		for(x = 0; x < 3; x++) {
+			for(y = 0; y < 3; y++)
+				if(board[x][y] == 2) index = rowColToIndex(x, y);
+                }
+	}
+
+	return index;
 }

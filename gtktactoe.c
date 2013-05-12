@@ -34,6 +34,7 @@ static const int MIN_REV = 2;
 /* Set application flags */
 int VERBOSE = 0;
 int DEBUG = 0;
+int COMPUTER = 0;
 
 /* Button callback structures */
 struct Cell {
@@ -50,6 +51,8 @@ static void newGameEvent(GtkWidget *emitter, int *newGame);
 /* CLI messages */
 static void displayHelp(char *name);
 static void displayVersion(char *name);
+
+int rowColToInt(int row, int col);
 
 int main(int argc, char **argv) {
 	/* Declare internal variables */
@@ -101,6 +104,9 @@ int main(int argc, char **argv) {
 			DEBUG = 1;
 			/* Include the VERBOSE flag with the DEBUG flag */
 			VERBOSE = 1;
+		}
+		if(!(strcmp(argv[i], "-c") && strcmp(argv[i], "--computer-player"))) {
+			COMPUTER = 1;
 		}
 
 		/* --- NOT IMPLEMENTED
@@ -190,6 +196,51 @@ int main(int argc, char **argv) {
 
 		/* Main loop */
 		while(1) {
+			if(COMPUTER) {
+				while(checkForWin() == ' ') {
+					static int firstTurn = 1;
+					int row, col, index;
+					GtkButton *button;
+
+					gtk_main_iteration();
+					sprintf(labelText, "%c's turn", toupper(checkTurn()));
+					gtk_label_set_text(label, labelText);
+
+					if(checkTurn() == 'o') {
+						if(firstTurn) {
+							row = 1;
+							col = 1;
+
+							/* Try to get the middle square. */
+							if(!selectSquare(row, col)) {
+								row = 2;
+								col = 1;
+								selectSquare(row, col);
+							}
+
+							button = cells[rowColToIndex(row, col)].button;
+							gtk_button_set_image(button, gtk_image_new_from_file("/usr/share/gtktactoe/sprites/O.png"));
+							gtk_widget_set_sensitive(button, FALSE);
+
+							firstTurn = 0;
+
+							continue;
+						}
+
+						index = getBestIndex();
+						row = index / 3;
+						col = index % 3;
+
+						selectSquare(row, col);
+						button = cells[index].button;
+						gtk_button_set_image(button, gtk_image_new_from_file("/usr/share/gtktactoe/sprites/O.png"));
+						gtk_widget_set_sensitive(button, FALSE);
+					}
+				}
+
+				COMPUTER = 0;
+			}
+
 			while(checkForWin() == ' ' && newGame == 0) {
 				gtk_main_iteration();
 				sprintf(labelText, "%c's turn", toupper(checkTurn()));

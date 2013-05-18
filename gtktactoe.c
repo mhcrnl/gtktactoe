@@ -242,21 +242,23 @@ int main(int argc, char **argv) {
 					}
 				}
 
-				/* Display the victor */
-				if(checkForWin() != 't') {
-					if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
-					sprintf(labelText, "%c's won!", toupper(checkForWin()));
-					gtk_label_set_text(label, labelText);
-				} else {
-					if(VERBOSE) printf("Tie!");
-					gtk_label_set_text(label, "Tie!");
+				if(!NEWGAME) {
+					/* Display the victor */
+					if(checkForWin() != 't') {
+						if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
+						sprintf(labelText, "%c's won!", toupper(checkForWin()));
+						gtk_label_set_text(label, labelText);
+					} else {
+						if(VERBOSE) printf("Tie!");
+						gtk_label_set_text(label, "Tie!");
+					}
+
+					/* Turn off the sensitivity of the cells */
+					 for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
+
+					/* Wait for a new game */
+					while(!NEWGAME) gtk_main_iteration();
 				}
-
-				/* Turn off cell sensitivity */
-				for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
-
-				/* Wait for a new game */
-				while(!NEWGAME) gtk_main_iteration();
 
 				/* Reset the images */
 				for(i = 0; i < 9; i++) {
@@ -294,9 +296,7 @@ int main(int argc, char **argv) {
 				}
 
 				/* Turn off the sensitivity of the cells */
-				for(i = 0; i < 9; i++) {
-					gtk_widget_set_sensitive(cells[i].button, FALSE);
-				}
+				for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
 
 				/* Wait for NEWGAME to change */
 				while(!NEWGAME) gtk_main_iteration();

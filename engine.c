@@ -181,18 +181,16 @@ int getBestIndex(void) {
 	/* If the computer cannot win, check to see if the player can win on his/her next turn */
 	if(index == -1) index = winPossibility(X);
 
-	/* If the player cannot win on his or her next turn, check for a "split" */
-	if(index == -1) {
-		if(((indexToBoardValue(0) == X) && (indexToBoardValue(8) == X)) || ((indexToBoardValue(6) == X) && (indexToBoardValue(2) == X))) {
-			if(isTaken(0, 1)) index = 7;
-			else index = 1;
-		}
-	} 
-
 	if(index == -1) { 
 		for(x = 0; x < 3; x++) {
-			for(y = 0; y < 3; y++)
-				if(board[x][y] == 2) index = rowColToIndex(x, y);
+			for(y = 0; y < 3; y++) {
+				if(!isTaken(x, y)) {
+					index = rowColToIndex(x, y);
+			 		break;
+				}
+			}
+
+		if(index != -1) break;
                 }
 	}
 

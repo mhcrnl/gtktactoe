@@ -109,9 +109,6 @@ int main(int argc, char **argv) {
 			/* Include the VERBOSE flag with the DEBUG flag */
 			VERBOSE = 1;
 		}
-		if(!(strcmp(argv[i], "-c") && strcmp(argv[i], "--computer-player"))) {
-			COMPUTER = 1;
-		}
 
 		/* --- NOT IMPLEMENTED
 		if(!(strcmp(argv[i], "-w") && strcmp(argv[i], "--width"))) {
@@ -208,6 +205,7 @@ int main(int argc, char **argv) {
 					gtk_main_iteration();
 					sprintf(labelText, "%c's turn", toupper(checkTurn()));
 					gtk_label_set_text(label, labelText);
+					sprintf(labelText, "%s/share/gtktactoe/sprites/O.png", PATH);
 
 					if(checkTurn() == 'o' && checkForWin() == ' ') {
 						if(firstTurn) {
@@ -215,14 +213,15 @@ int main(int argc, char **argv) {
 							col = 1;
 
 							/* Try to get the middle square. */
-							if(selectSquare(row, col) == 0) {
-								row = 1;
+							if(!selectSquare(row, col)) {
+								row = 2;
 								col = 2;
 								selectSquare(row, col);
 							}
 
 							button = cells[rowColToIndex(row, col)].button;
-							gtk_button_set_image(button, gtk_image_new_from_file("/usr/share/gtktactoe/sprites/O.png"));
+
+							gtk_button_set_image(button, gtk_image_new_from_file(labelText));
 							gtk_widget_set_sensitive(button, FALSE);
 
 							firstTurn = 0;
@@ -235,8 +234,10 @@ int main(int argc, char **argv) {
 						col = index % 3;
 
 						selectSquare(row, col);
+
 						button = cells[index].button;
-						gtk_button_set_image(button, gtk_image_new_from_file("/usr/share/gtktactoe/sprites/O.png"));
+
+						gtk_button_set_image(button, gtk_image_new_from_file(labelText));
 						gtk_widget_set_sensitive(button, FALSE);
 					}
 				}
@@ -268,6 +269,7 @@ int main(int argc, char **argv) {
 
 				/* Reset */
 				NEWGAME = 0;
+				firstTurn = 1;
 
 				initEngine();
 

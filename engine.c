@@ -181,6 +181,27 @@ int getBestIndex(void) {
 	/* If the computer cannot win, check to see if the player can win on his/her next turn */
 	if(index == -1) index = winPossibility(X);
 
+	/* Check for weird stuff */
+	if(index == -1) {
+		if((indexToBoardValue(1) == X) && (indexToBoardValue(3) == X))
+			if(!isTaken(0, 0)) index = 0;
+
+		if(index == -1) {
+			if((indexToBoardValue(1) == X) && (indexToBoardValue(5) == X))
+				if(!isTaken(0, 2)) index = 2;
+		}
+
+		if(index == -1) {
+			if((indexToBoardValue(7) == X) && (indexToBoardValue(5) == X))
+				if(!isTaken(2, 2)) index = 8;
+		}
+
+		if(index == -1) {
+			if((indexToBoardValue(7) == X) && (indexToBoardValue(3) == X))
+				if(!isTaken(2, 0)) index = 6;
+		}
+	}
+
 	if(index == -1) { 
 		for(x = 0; x < 3; x++) {
 			for(y = 0; y < 3; y++) {

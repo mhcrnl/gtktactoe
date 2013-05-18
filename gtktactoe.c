@@ -35,6 +35,7 @@ static const int MIN_REV = 2;
 int VERBOSE = 0;
 int DEBUG = 0;
 int COMPUTER = 0;
+int NEWGAME = 0;
 
 /* Button callback structures */
 struct Cell {
@@ -46,7 +47,7 @@ struct Cell {
 /* Signal handlers */
 static void finish(int sig);
 static void clickEvent(GtkWidget *emitter, struct Cell *cell);
-static void newGameEvent(GtkWidget *emitter, int *newGame);
+static void newGameEvent(GtkWidget *emitter, int computer);
 
 /* CLI messages */
 static void displayHelp(char *name);
@@ -57,9 +58,10 @@ int rowColToInt(int row, int col);
 int main(int argc, char **argv) {
 	/* Declare internal variables */
 	int i;
+	int firstTurn = 1;
+	int row, col, index;
 	int windowWidth = 600;
 	int windowHeight = 400;
-	int newGame = 0;
 	char labelText[50];
 
 	/* Create GTK Objects */
@@ -69,9 +71,11 @@ int main(int argc, char **argv) {
 	GtkWidget *filemenu;
 	GtkWidget *file;
 	GtkWidget *newGameButton;
+	GtkWidget *newComputerGameButton;
 	GtkWidget *quitButton;
 	GtkGrid *board;
 	GtkLabel *label;
+	GtkButton *button;
 	struct Cell cells[9];
 
 	/* Keyboard Shortcuts */
@@ -150,16 +154,19 @@ int main(int argc, char **argv) {
 
 			file = gtk_menu_item_new_with_mnemonic("_Game");
 			newGameButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, accel_group);
+			newComputerGameButton = gtk_menu_item_new_with_label("New  Computer Game");
 			quitButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, accel_group);
 
 			gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
 			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), newGameButton);
+			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), newComputerGameButton);
 			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), gtk_separator_menu_item_new());
 			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), quitButton);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
 			gtk_box_pack_start(GTK_BOX(vBox), menubar, FALSE, FALSE, 0);
 
-			g_signal_connect(newGameButton, "activate", G_CALLBACK(newGameEvent), &newGame);
+			g_signal_connect(newGameButton, "activate", G_CALLBACK(newGameEvent), 0);
+			g_signal_connect(newComputerGameButton, "activate", G_CALLBACK(newGameEvent), 1);
 			g_signal_connect(quitButton, "activate", G_CALLBACK(finish), 0);
 
 			/* TicTacToe Grid */
@@ -197,24 +204,20 @@ int main(int argc, char **argv) {
 		/* Main loop */
 		while(1) {
 			if(COMPUTER) {
-				while(checkForWin() == ' ') {
-					static int firstTurn = 1;
-					int row, col, index;
-					GtkButton *button;
-
+				while(checkForWin() == ' ' && !NEWGAME) {
 					gtk_main_iteration();
 					sprintf(labelText, "%c's turn", toupper(checkTurn()));
 					gtk_label_set_text(label, labelText);
 
-					if(checkTurn() == 'o') {
+					if(checkTurn() == 'o' && checkForWin() == ' ') {
 						if(firstTurn) {
 							row = 1;
 							col = 1;
 
 							/* Try to get the middle square. */
-							if(!selectSquare(row, col)) {
-								row = 2;
-								col = 1;
+							if(selectSquare(row, col) == 0) {
+								row = 1;
+								col = 2;
 								selectSquare(row, col);
 							}
 
@@ -238,16 +241,46 @@ int main(int argc, char **argv) {
 					}
 				}
 
-				COMPUTER = 0;
+				/* Display the victor */
+				if(checkForWin() != 't') {
+					if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
+					sprintf(labelText, "%c's won!", toupper(checkForWin()));
+					gtk_label_set_text(label, labelText);
+				} else {
+					if(VERBOSE) printf("Tie!");
+					gtk_label_set_text(label, "Tie!");
+				}
+
+				/* Turn off cell sensitivity */
+				for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
+
+				/* Wait for a new game */
+				while(!NEWGAME) gtk_main_iteration();
+
+				/* Reset the images */
+				for(i = 0; i < 9; i++) {
+					sprintf(labelText, "%s/share/gtktactoe/sprites/empty.png", PATH);
+                                	gtk_button_set_image(cells[i].button, gtk_image_new_from_file(labelText));
+				}
+
+				/* Make the cells sensitive again */
+				for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, TRUE);
+
+				/* Reset */
+				NEWGAME = 0;
+
+				initEngine();
+
+				continue;
 			}
 
-			while(checkForWin() == ' ' && newGame == 0) {
+			while(checkForWin() == ' ' && !NEWGAME) {
 				gtk_main_iteration();
 				sprintf(labelText, "%c's turn", toupper(checkTurn()));
 				gtk_label_set_text(label, labelText);
 			}
 
-			if(newGame == 0) {
+			if(!NEWGAME) {
 				/* Display the victor */
 				if(checkForWin() != 't') {
 					if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
@@ -263,8 +296,8 @@ int main(int argc, char **argv) {
 					gtk_widget_set_sensitive(cells[i].button, FALSE);
 				}
 
-				/* Wait for newGame to change */
-				while(newGame == 0) gtk_main_iteration();
+				/* Wait for NEWGAME to change */
+				while(!NEWGAME) gtk_main_iteration();
 			}
 
 			/* Reset the images */
@@ -277,7 +310,7 @@ int main(int argc, char **argv) {
 			for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, TRUE);
 
 			/* Reset */
-			newGame = 0;
+			NEWGAME = 0;
 
 			initEngine();
 		}
@@ -318,8 +351,12 @@ static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 	return;
 }
 
-static void newGameEvent(GtkWidget *emitter, int *newGame) {
-	*newGame = 1;
+static void newGameEvent(GtkWidget *emitter, int computer) {
+	if(computer) COMPUTER = 1;
+	else COMPUTER = 0;
+
+	NEWGAME = 1;
+
 	return;
 }
 

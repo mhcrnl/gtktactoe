@@ -175,6 +175,9 @@ int getBestIndex(void) {
 	int index;
 	int x, y;
 
+	/* Start generating random numbers */
+	rand();
+
 	/* Check to see if the computer can win on this turn */
 	index = winPossibility(O);
 
@@ -202,17 +205,22 @@ int getBestIndex(void) {
 		}
 	}
 
-	if(index == -1) { 
-		for(x = 0; x < 3; x++) {
-			for(y = 0; y < 3; y++) {
-				if(!isTaken(x, y)) {
-					index = rowColToIndex(x, y);
-			 		break;
-				}
-			}
+	/* This is a little hacky. It takes some assumptions from gtktactoe.c */
+	if(index == -1) {
+		if((indexToBoardValue(0) == X) && (indexToBoardValue(4) == X)) {
+			if(!isTaken(0, 2)) index = 2;
+			else if(!isTaken(2, 0)) index = 6;
+		}
+	}
 
-		if(index != -1) break;
-                }
+	/* If all else fails... */
+	if(index == -1) {
+		do {
+			x = rand() % 3;
+			y = rand() % 3;
+
+			if(!isTaken(x, y)) index = rowColToIndex(x, y);
+		} while(index == -1);
 	}
 
 	return index;

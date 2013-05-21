@@ -47,7 +47,8 @@ struct Cell {
 /* Signal handlers */
 static void finish(int sig);
 static void clickEvent(GtkWidget *emitter, struct Cell *cell);
-static void newGameEvent(GtkWidget *emitter, int computer);
+static void newGameEvent(GtkWidget *emitter);
+static void checkboxEvent(GtkWidget *emitter);
 
 /* CLI messages */
 static void displayHelp(char *name);
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
 	GtkWidget *filemenu;
 	GtkWidget *file;
 	GtkWidget *newGameButton;
-	GtkWidget *newComputerGameButton;
+	GtkWidget *checkbox;
 	GtkWidget *quitButton;
 	GtkGrid *board;
 	GtkLabel *label;
@@ -151,19 +152,19 @@ int main(int argc, char **argv) {
 
 			file = gtk_menu_item_new_with_mnemonic("_Game");
 			newGameButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, accel_group);
-			newComputerGameButton = gtk_menu_item_new_with_label("New  Computer Game");
+			checkbox = gtk_check_menu_item_new_with_label("Computer Game");
 			quitButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, accel_group);
 
 			gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
 			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), newGameButton);
-			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), newComputerGameButton);
+			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), checkbox);
 			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), gtk_separator_menu_item_new());
 			gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), quitButton);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
 			gtk_box_pack_start(GTK_BOX(vBox), menubar, FALSE, FALSE, 0);
 
 			g_signal_connect(newGameButton, "activate", G_CALLBACK(newGameEvent), 0);
-			g_signal_connect(newComputerGameButton, "activate", G_CALLBACK(newGameEvent), 1);
+			g_signal_connect(checkbox, "activate", G_CALLBACK(checkboxEvent), 0);
 			g_signal_connect(quitButton, "activate", G_CALLBACK(finish), 0);
 
 			/* TicTacToe Grid */
@@ -353,13 +354,14 @@ static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 	return;
 }
 
-static void newGameEvent(GtkWidget *emitter, int computer) {
-	if(computer) COMPUTER = 1;
-	else COMPUTER = 0;
-
+static void newGameEvent(GtkWidget *emitter) {
 	NEWGAME = 1;
 
 	return;
+}
+
+static void checkboxEvent(GtkWidget *emitter) {
+	COMPUTER = (++COMPUTER) % 2;
 }
 
 static void displayHelp(char *name) {

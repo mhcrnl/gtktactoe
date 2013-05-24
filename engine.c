@@ -33,15 +33,15 @@ static int board[3][3] = { {2, 2, 2}, {2, 2, 2}, {2, 2, 2} };
 static const int X = 0;
 static const int O = 1;
 
-static int isTaken(int row, int col) {
+int isTaken(int row, int col) {
 	return board[row][col] != 2;
 }
 
-static int isX(int row, int col) {
+int isX(int row, int col) {
 	return board[row][col] == X;
 }
 
-static int isO(int row, int col) {
+int isO(int row, int col) {
 	return board[row][col] == O;
 }
 
@@ -211,16 +211,6 @@ int getBestIndex(void) {
 			if(!isTaken(0, 2)) index = 2;
 			else if(!isTaken(2, 0)) index = 6;
 		}
-	}
-
-	/* If all else fails... */
-	if(index == -1) {
-		do {
-			x = rand() % 3;
-			y = rand() % 3;
-
-			if(!isTaken(x, y)) index = rowColToIndex(x, y);
-		} while(index == -1);
 	}
 
 	return index;

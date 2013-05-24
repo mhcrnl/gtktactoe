@@ -60,6 +60,7 @@ int main(int argc, char **argv) {
 	/* Declare internal variables */
 	int i;
 	int firstTurn = 1;
+	int secondTurn = 0;
 	int row, col, index;
 	int windowWidth = 600;
 	int windowHeight = 400;
@@ -209,6 +210,9 @@ int main(int argc, char **argv) {
 					sprintf(labelText, "%s/share/gtktactoe/sprites/O.png", PATH);
 
 					if(checkTurn() == 'o' && checkForWin() == ' ') {
+						index = getBestIndex();
+
+						/* It turns out that it is good to be specific on the first and second turns */
 						if(firstTurn) {
 							row = 1;
 							col = 1;
@@ -226,11 +230,42 @@ int main(int argc, char **argv) {
 							gtk_widget_set_sensitive(button, FALSE);
 
 							firstTurn = 0;
+							secondTurn = 1;
 
 							continue;
 						}
 
-						index = getBestIndex();
+						if(secondTurn == 1) {
+							if(isO(1, 1) && index == -1) {
+								if(!isTaken(1, 0) && !isTaken(1, 2)) {
+									row = 1;
+									col = 0;
+									selectSquare(row, col);
+								} else {
+									row = 0;
+									col = 1;
+									selectSquare(row, col);
+								}
+
+								button = cells[rowColToIndex(row, col)].button;
+								gtk_button_set_image(button, gtk_image_new_from_file(labelText));
+								gtk_widget_set_sensitive(button, FALSE);
+
+								secondTurn = 0;
+								continue;
+							}
+						} else secondTurn = 0;
+
+						/* Randomly select a square if there is nothing that *should* be done */
+						if(index == -1) {
+							do {
+								row = rand() % 3;
+								col = rand() % 3;
+
+								if(!isTaken(row, col)) index = rowColToIndex(row, col);
+							} while(index == -1);
+						}
+
 						row = index / 3;
 						col = index % 3;
 
@@ -255,7 +290,7 @@ int main(int argc, char **argv) {
 					}
 
 					/* Turn off the sensitivity of the cells */
-					 for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
+					for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
 
 					/* Wait for a new game */
 					while(!NEWGAME) gtk_main_iteration();
@@ -333,6 +368,9 @@ static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 	int index, row, col;
 	GtkButton *button;
 
+	/* We don't want the player to accidentally play on the computer's turn */
+	if(COMPUTER) if(checkTurn == 'o') return;
+
 	player = toupper(checkTurn());
 	index = cell->index;
 	button = cell->button;
@@ -361,7 +399,10 @@ static void newGameEvent(GtkWidget *emitter) {
 }
 
 static void checkboxEvent(GtkWidget *emitter) {
+	/* Flip between 0 and 1 */
 	COMPUTER = (++COMPUTER) % 2;
+
+	return;
 }
 
 static void displayHelp(char *name) {

@@ -54,7 +54,8 @@ static void checkboxEvent(GtkWidget *emitter);
 static void displayHelp(char *name);
 static void displayVersion(char *name);
 
-int rowColToInt(int row, int col);
+/* Helpers */
+static void displayVictor(GtkLabel *label);
 
 int main(int argc, char **argv) {
 	/* Declare internal variables */
@@ -281,14 +282,7 @@ int main(int argc, char **argv) {
 
 				if(!NEWGAME) {
 					/* Display the victor */
-					if(checkForWin() != 't') {
-						if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
-						sprintf(labelText, "%c's won!", toupper(checkForWin()));
-						gtk_label_set_text(label, labelText);
-					} else {
-						if(VERBOSE) printf("Tie!");
-						gtk_label_set_text(label, "Tie!");
-					}
+					displayVictor(label);
 
 					/* Turn off the sensitivity of the cells */
 					for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
@@ -323,14 +317,7 @@ int main(int argc, char **argv) {
 
 			if(!NEWGAME) {
 				/* Display the victor */
-				if(checkForWin() != 't') {
-					if(VERBOSE) printf("%c's won!\n", toupper(checkForWin()));
-					sprintf(labelText, "%c's won!", toupper(checkForWin()));
-					gtk_label_set_text(label, labelText);
-				} else {
-					if(VERBOSE) printf("Tie!");
-					gtk_label_set_text(label, "Tie!");
-				}
+				displayVictor(label);
 
 				/* Turn off the sensitivity of the cells */
 				for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
@@ -361,6 +348,22 @@ int main(int argc, char **argv) {
 	}
 
 	return 0;
+}
+
+static void displayVictor(GtkLabel *label) {
+	char victor = checkForWin();
+	char labelText[8];
+
+	if(victor == 't') {
+		if(VERBOSE) printf("Tie!");
+		gtk_label_set_text(label, "Tie!");
+	} else {
+		if(VERBOSE) printf("%c's won!\n", toupper(victor));
+		sprintf(labelText, "%c's won!", toupper(victor));
+		gtk_label_set_text(label, labelText);
+	}
+
+	return;
 }
 
 static void clickEvent(GtkWidget *emitter, struct Cell *cell) {

@@ -235,7 +235,9 @@ int main(int argc, char **argv) {
 							continue;
 						}
 
-						if(secondTurn == 1) {
+						if(secondTurn) {
+							secondTurn = 0;
+
 							if(isO(1, 1) && index == -1) {
 								if(!isTaken(1, 0) && !isTaken(1, 2)) {
 									row = 1;
@@ -251,10 +253,9 @@ int main(int argc, char **argv) {
 								gtk_button_set_image(button, gtk_image_new_from_file(labelText));
 								gtk_widget_set_sensitive(button, FALSE);
 
-								secondTurn = 0;
 								continue;
 							}
-						} else secondTurn = 0;
+						}
 
 						/* Randomly select a square if there is nothing that *should* be done */
 						if(index == -1) {

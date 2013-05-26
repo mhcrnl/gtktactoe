@@ -23,9 +23,6 @@
 #ifndef _ENGINE_H_
 #define _ENGINE_H_
 
-int isTaken(int row, int col);
-int isX(int row, int col);
-int isO(int row, int col);
 void initEngine(void);
 char checkForWin(void);
 char checkTurn(void);

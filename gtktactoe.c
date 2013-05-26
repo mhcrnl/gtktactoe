@@ -61,12 +61,9 @@ static void displayVictor(GtkLabel *label);
 
 int main(int argc, char **argv) {
 	/* Declare internal variables */
-	int i;
-	int firstTurn = 1;
-	int secondTurn = 0;
+	int i, index;
 	int thereIsAGameInProgress = 1;
 	int computer = 0;
-	int row, col, index;
 	int windowWidth = 600;
 	int windowHeight = 400;
 	char labelText[50];
@@ -216,85 +213,21 @@ int main(int argc, char **argv) {
 
 			/* Gameplay */
 			if(thereIsAGameInProgress) {
-				if(checkForWin() == ' ' && computer) {	
+				if(checkForWin() == ' ' && checkTurn() == 'o' && computer) {	
 					sprintf(labelText, "%s/share/gtktactoe/sprites/O.png", PATH);
 
-					if(checkForWin() == ' ' && checkTurn() == 'o') {
-						index = getBestIndex();
+					index = getBestIndex();
 
-						/* It turns out that it is good to be specific on the first and second turns */
-						if(firstTurn) {
-							row = 1;
-							col = 1;
+					selectSquare((index / 3), (index % 3));
 
-							/* Try to get the middle square. */
-							if(!selectSquare(row, col)) {
-								row = 2;
-								col = 2;
-								selectSquare(row, col);
-							}
+					button = cells[index].button;
 
-							button = cells[rowColToIndex(row, col)].button;
+					gtk_button_set_image(button, gtk_image_new_from_file(labelText));
+					gtk_widget_set_sensitive(button, FALSE);
 
-							gtk_button_set_image(button, gtk_image_new_from_file(labelText));
-							gtk_widget_set_sensitive(button, FALSE);
-
-							firstTurn = 0;
-							secondTurn = 1;
-
-							continue;
-						}
-
-						if(secondTurn) {
-							secondTurn = 0;
-
-							if(isO(1, 1) && index == -1) {
-								if(!isTaken(1, 0) && !isTaken(1, 2)) {
-									row = 1;
-									col = 0;
-									selectSquare(row, col);
-								} else {
-									row = 0;
-									col = 1;
-									selectSquare(row, col);
-								}
-
-								button = cells[rowColToIndex(row, col)].button;
-								gtk_button_set_image(button, gtk_image_new_from_file(labelText));
-								gtk_widget_set_sensitive(button, FALSE);
-
-								continue;
-							}
-						}
-
-						/* Randomly select a square if there is nothing that *should* be done */
-						if(index == -1) {
-							do {
-								row = rand() % 3;
-								col = rand() % 3;
-
-								if(!isTaken(row, col)) index = rowColToIndex(row, col);
-							} while(index == -1);
-						}
-
-						row = index / 3;
-						col = index % 3;
-
-						selectSquare(row, col);
-
-						button = cells[index].button;
-
-						gtk_button_set_image(button, gtk_image_new_from_file(labelText));
-						gtk_widget_set_sensitive(button, FALSE);
-
-						continue;
-					}
-				} else if(checkForWin() == ' ' && thereIsAGameInProgress) {
-					 continue;
-				} else {
-					/* if checkForWin() != ' ', then the game has ended */
-					thereIsAGameInProgress = 0;
-				}
+				} else if(checkForWin() == ' ' && thereIsAGameInProgress) continue;
+				/* if checkForWin() != ' ', then the game has ended */
+				else thereIsAGameInProgress = 0;
 			} else {
 				/* If the game ended without the newGame event being called... */
 				if(NEWGAME == 0) {
@@ -323,7 +256,6 @@ int main(int argc, char **argv) {
 
 				NEWGAME = 0;
 				thereIsAGameInProgress = 1;
-				firstTurn = 1;
 
 				initEngine();
 			}
@@ -361,7 +293,7 @@ static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 	GtkButton *button;
 
 	/* We don't want the player to accidentally play on the computer's turn */
-	if(COMPUTER) if(checkTurn == 'o') return;
+	/* if(COMPUTER) if(checkTurn() == 'o') return; */
 
 	player = toupper(checkTurn());
 	index = cell->index;

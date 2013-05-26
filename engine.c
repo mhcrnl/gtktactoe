@@ -28,21 +28,15 @@
 static const char turnChars[3] = {'x', 'o', ' '};
 
 static int turn = 0;
+static int firstTurn = 1;
+static int secondTurn = 0;
 static int board[3][3] = { {2, 2, 2}, {2, 2, 2}, {2, 2, 2} };
 
 static const int X = 0;
 static const int O = 1;
 
-int isTaken(int row, int col) {
+static int isTaken(int row, int col) {
 	return board[row][col] != 2;
-}
-
-int isX(int row, int col) {
-	return board[row][col] == X;
-}
-
-int isO(int row, int col) {
-	return board[row][col] == O;
 }
 
 void initEngine(void) {
@@ -51,6 +45,10 @@ void initEngine(void) {
 
 	/* Reset turn counter */
 	turn = 0;
+
+	/* Rest computer's turn counter */
+	firstTurn = 1;
+	secondTurn = 0;
 
 	/* Reset board */
 	for(x = 0; x < 3; x++) {
@@ -172,7 +170,7 @@ int rowColToIndex(int row, int col) {
 }
 
 int getBestIndex(void) {
-	int index;
+	int index, row, col;
 
 	/* Check to see if the computer can win on this turn */
 	index = winPossibility(O);
@@ -207,6 +205,36 @@ int getBestIndex(void) {
 			if(!isTaken(0, 2)) index = 2;
 			else if(!isTaken(2, 0)) index = 6;
 		}
+	}
+
+	/* It turns out that it is good to be specific on the first and second turns */
+	if(firstTurn) {
+		/* Try to get the middle square. */
+		if(isTaken(1, 1)) {
+			/* return the last square */
+			index = 8;
+		} else index = 4;
+
+		firstTurn = 0;
+		secondTurn = 1;
+
+	} else if(secondTurn) {
+		if(board[1][1] == O && index == -1) {
+			if(!isTaken(1, 0) && !isTaken(1, 2)) index = 3;
+			else index = 1;
+		}
+
+		secondTurn = 0;
+	}
+
+	/* Randomly select a square if there is nothing that *should* be done */
+	if(index == -1) {
+		do {
+			row = rand() % 3;
+			col = rand() % 3;
+
+			if(!isTaken(row, col)) index = rowColToIndex(row, col);
+		} while(index == -1);
 	}
 
 	return index;

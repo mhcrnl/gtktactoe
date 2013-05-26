@@ -27,7 +27,6 @@ void initEngine(void);
 char checkForWin(void);
 char checkTurn(void);
 int selectSquare(int row, int col);
-int rowColToIndex(int row, int col);
 int getBestIndex(void);
 
 #endif /* _ENGINE_H_ */

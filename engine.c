@@ -173,10 +173,6 @@ int rowColToIndex(int row, int col) {
 
 int getBestIndex(void) {
 	int index;
-	int x, y;
-
-	/* Start generating random numbers */
-	rand();
 
 	/* Check to see if the computer can win on this turn */
 	index = winPossibility(O);

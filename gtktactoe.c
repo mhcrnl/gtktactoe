@@ -34,8 +34,10 @@ static const int MIN_REV = 2;
 /* Set application flags */
 int VERBOSE = 0;
 int DEBUG = 0;
+
+/* Global Variables */
 int COMPUTER = 0;
-int GAMEHASENDED = 0;
+int NEWGAME = 0;
 
 /* Button callback structures */
 struct Cell {
@@ -62,6 +64,8 @@ int main(int argc, char **argv) {
 	int i;
 	int firstTurn = 1;
 	int secondTurn = 0;
+	int thereIsAGameInProgress = 1;
+	int computer = 0;
 	int row, col, index;
 	int windowWidth = 600;
 	int windowHeight = 400;
@@ -207,91 +211,101 @@ int main(int argc, char **argv) {
 			sprintf(labelText, "%c's turn", toupper(checkTurn()));
 			gtk_label_set_text(label, labelText);
 
-			if(checkForWin() == ' ' && COMPUTER && !GAMEHASENDED) {	
-				sprintf(labelText, "%s/share/gtktactoe/sprites/O.png", PATH);
+			/* If the newGame event has been called, then we need to start a new game */
+			if(NEWGAME) thereIsAGameInProgress = 0;
 
-				if(checkForWin() == ' ' && checkTurn() == 'o') {
-					index = getBestIndex();
+			/* Gameplay */
+			if(thereIsAGameInProgress) {
+				if(checkForWin() == ' ' && computer) {	
+					sprintf(labelText, "%s/share/gtktactoe/sprites/O.png", PATH);
 
-					/* It turns out that it is good to be specific on the first and second turns */
-					if(firstTurn) {
-						row = 1;
-						col = 1;
+					if(checkForWin() == ' ' && checkTurn() == 'o') {
+						index = getBestIndex();
 
-						/* Try to get the middle square. */
-						if(!selectSquare(row, col)) {
-							row = 2;
-							col = 2;
-							selectSquare(row, col);
-						}
+						/* It turns out that it is good to be specific on the first and second turns */
+						if(firstTurn) {
+							row = 1;
+							col = 1;
 
-						button = cells[rowColToIndex(row, col)].button;
-
-						gtk_button_set_image(button, gtk_image_new_from_file(labelText));
-						gtk_widget_set_sensitive(button, FALSE);
-
-						firstTurn = 0;
-						secondTurn = 1;
-
-						continue;
-					}
-
-					if(secondTurn) {
-						secondTurn = 0;
-
-						if(isO(1, 1) && index == -1) {
-							if(!isTaken(1, 0) && !isTaken(1, 2)) {
-								row = 1;
-								col = 0;
-								selectSquare(row, col);
-							} else {
-								row = 0;
-								col = 1;
+							/* Try to get the middle square. */
+							if(!selectSquare(row, col)) {
+								row = 2;
+								col = 2;
 								selectSquare(row, col);
 							}
 
 							button = cells[rowColToIndex(row, col)].button;
+
 							gtk_button_set_image(button, gtk_image_new_from_file(labelText));
 							gtk_widget_set_sensitive(button, FALSE);
 
+							firstTurn = 0;
+							secondTurn = 1;
+
 							continue;
 						}
+
+						if(secondTurn) {
+							secondTurn = 0;
+
+							if(isO(1, 1) && index == -1) {
+								if(!isTaken(1, 0) && !isTaken(1, 2)) {
+									row = 1;
+									col = 0;
+									selectSquare(row, col);
+								} else {
+									row = 0;
+									col = 1;
+									selectSquare(row, col);
+								}
+
+								button = cells[rowColToIndex(row, col)].button;
+								gtk_button_set_image(button, gtk_image_new_from_file(labelText));
+								gtk_widget_set_sensitive(button, FALSE);
+
+								continue;
+							}
+						}
+
+						/* Randomly select a square if there is nothing that *should* be done */
+						if(index == -1) {
+							do {
+								row = rand() % 3;
+								col = rand() % 3;
+
+								if(!isTaken(row, col)) index = rowColToIndex(row, col);
+							} while(index == -1);
+						}
+
+						row = index / 3;
+						col = index % 3;
+
+						selectSquare(row, col);
+
+						button = cells[index].button;
+
+						gtk_button_set_image(button, gtk_image_new_from_file(labelText));
+						gtk_widget_set_sensitive(button, FALSE);
+
+						continue;
 					}
-
-					/* Randomly select a square if there is nothing that *should* be done */
-					if(index == -1) {
-						do {
-							row = rand() % 3;
-							col = rand() % 3;
-
-							if(!isTaken(row, col)) index = rowColToIndex(row, col);
-						} while(index == -1);
-					}
-
-					row = index / 3;
-					col = index % 3;
-
-					selectSquare(row, col);
-
-					button = cells[index].button;
-
-					gtk_button_set_image(button, gtk_image_new_from_file(labelText));
-					gtk_widget_set_sensitive(button, FALSE);
-
-					continue;
+				} else if(checkForWin() == ' ' && thereIsAGameInProgress) {
+					 continue;
+				} else {
+					/* if checkForWin() != ' ', then the game has ended */
+					thereIsAGameInProgress = 0;
 				}
-			} else if(checkForWin() == ' ' && !GAMEHASENDED) {
-				 continue;
 			} else {
-				if(!GAMEHASENDED) {
+				/* If the game ended without the newGame event being called... */
+				if(NEWGAME == 0) {
 					/* Display the victor */
 					displayVictor(label);
 
 					/* Turn off the sensitivity of the cells */
 					for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
 
-					/* Wait for GAMEHASENDED to change */
-					while(!GAMEHASENDED) gtk_main_iteration();
+					/* Wait for the newGame event to be called */
+					while(NEWGAME == 0) gtk_main_iteration();
 				}
 
 				/* Reset the images */
@@ -304,7 +318,11 @@ int main(int argc, char **argv) {
 				for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, TRUE);
 
 				/* Reset */
-				GAMEHASENDED = 0;
+				if(COMPUTER == 1) computer = 1;
+				else computer = 0;
+
+				NEWGAME = 0;
+				thereIsAGameInProgress = 1;
 				firstTurn = 1;
 
 				initEngine();
@@ -367,7 +385,7 @@ static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 }
 
 static void newGameEvent(GtkWidget *emitter) {
-	GAMEHASENDED = 1;
+	NEWGAME = 1;
 
 	return;
 }

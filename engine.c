@@ -178,28 +178,27 @@ int getBestIndex(void) {
 	/* If the computer cannot win, check to see if the player can win on his/her next turn */
 	if(index == -1) index = winPossibility(X);
 
-	/* Check for weird stuff */
+	/* Even if neither the computer of the player can win, the computer must not waste its turn */
 	if(index == -1) {
 		if((indexToBoardValue(1) == X) && (indexToBoardValue(3) == X))
 			if(!isTaken(0, 0)) index = 0;
-
-		if(index == -1) {
-			if((indexToBoardValue(1) == X) && (indexToBoardValue(5) == X))
-				if(!isTaken(0, 2)) index = 2;
-		}
-
-		if(index == -1) {
-			if((indexToBoardValue(7) == X) && (indexToBoardValue(5) == X))
-				if(!isTaken(2, 2)) index = 8;
-		}
-
-		if(index == -1) {
-			if((indexToBoardValue(7) == X) && (indexToBoardValue(3) == X))
-				if(!isTaken(2, 0)) index = 6;
-		}
 	}
 
-	/* This is a little hacky. It takes some assumptions from gtktactoe.c */
+	if(index == -1) {
+		if((indexToBoardValue(1) == X) && (indexToBoardValue(5) == X))
+			if(!isTaken(0, 2)) index = 2;
+	}
+
+	if(index == -1) {
+		if((indexToBoardValue(7) == X) && (indexToBoardValue(5) == X))
+			if(!isTaken(2, 2)) index = 8;
+	}
+
+	if(index == -1) {
+		if((indexToBoardValue(7) == X) && (indexToBoardValue(3) == X))
+			if(!isTaken(2, 0)) index = 6;
+	}
+
 	if(index == -1) {
 		if((indexToBoardValue(0) == X) && (indexToBoardValue(4) == X)) {
 			if(!isTaken(0, 2)) index = 2;
@@ -207,7 +206,7 @@ int getBestIndex(void) {
 		}
 	}
 
-	/* It turns out that it is good to be specific on the first and second turns */
+	/* Wasting the first and second turns can be fatal */
 	if(firstTurn) {
 		/* Try to get the middle square. */
 		if(isTaken(1, 1)) {

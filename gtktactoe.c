@@ -36,6 +36,7 @@ int VERBOSE = 0;
 int DEBUG = 0;
 
 /* Global Variables */
+int CHECKBOX = 0;
 int COMPUTER = 0;
 int NEWGAME = 0;
 
@@ -213,7 +214,7 @@ int main(int argc, char **argv) {
 
 			/* Gameplay */
 			if(thereIsAGameInProgress) {
-				if(checkForWin() == ' ' && checkTurn() == 'o' && computer) {	
+				if(checkForWin() == ' ' && checkTurn() == 'o' && COMPUTER) {	
 					sprintf(labelText, "%s/share/gtktactoe/sprites/O.png", PATH);
 
 					index = getBestIndex();
@@ -251,8 +252,8 @@ int main(int argc, char **argv) {
 				for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, TRUE);
 
 				/* Reset */
-				if(COMPUTER == 1) computer = 1;
-				else computer = 0;
+				if(CHECKBOX) COMPUTER = 1;
+				else COMPUTER = 0;
 
 				NEWGAME = 0;
 				thereIsAGameInProgress = 1;
@@ -293,7 +294,7 @@ static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
 	GtkButton *button;
 
 	/* We don't want the player to accidentally play on the computer's turn */
-	/* if(COMPUTER) if(checkTurn() == 'o') return; */
+	if(COMPUTER) if(checkTurn() == 'o') return;
 
 	player = toupper(checkTurn());
 	index = cell->index;
@@ -324,7 +325,7 @@ static void newGameEvent(GtkWidget *emitter) {
 
 static void checkboxEvent(GtkWidget *emitter) {
 	/* Flip between 0 and 1 */
-	COMPUTER = (++COMPUTER) % 2;
+	CHECKBOX = (++CHECKBOX) % 2;
 
 	return;
 }

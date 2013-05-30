@@ -23,50 +23,33 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "engine.h"
+#include "libgtktactoe.h"
 
-/* Set version information */
-static const int VERSION = 0;
-static const int MAJ_REV = 1;
-static const int MIN_REV = 2;
-
-/* Set application flags */
-int VERBOSE = 0;
-int DEBUG = 0;
-
-/* Global Variables */
-int CHECKBOX = 0;
-int COMPUTER = 0;
-int NEWGAME = 0;
-
-/* Button callback structures */
-struct Cell {
+/* External Variables */
+extern const int VERSION;
+extern const int MAJ_REV;
+extern const int MIN_REV;
+extern int VERBOSE;
+extern int DEBUG;
+extern int CHECKBOX;
+extern int COMPUTER;
+extern int NEWGAME;
+extern struct Cell {
 	GtkButton *button;
 	gulong handler;
 	int index;
 };
 
-/* Signal handlers */
-static void finish(int sig);
-static void clickEvent(GtkWidget *emitter, struct Cell *cell);
-static void newGameEvent(GtkWidget *emitter);
-static void checkboxEvent(GtkWidget *emitter);
-
-/* CLI messages */
-static void displayHelp(char *name);
-static void displayVersion(char *name);
-
-/* Helpers */
-static void displayVictor(GtkLabel *label);
-
 int main(int argc, char **argv) {
 	/* Declare internal variables */
 	int i, index;
 	int thereIsAGameInProgress = 1;
-	int computer = 0;
-	int windowWidth = 600;
-	int windowHeight = 400;
+	/* int windowWidth = 600;
+	int windowHeight = 400; */
 	char labelText[50];
 
 	/* Create GTK Objects */
@@ -140,12 +123,12 @@ int main(int argc, char **argv) {
 		if(VERBOSE) printf("Building Interface...");
 
 		/* Main Window */
-		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		window = (GtkWindow *) gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		g_signal_connect(window, "delete-event", G_CALLBACK(finish), 0);
 
 		/* VBox */
-		vBox = gtk_vbox_new(FALSE, 0);
-		gtk_container_add(GTK_CONTAINER(window), vBox);
+		vBox = gtk_box_new(FALSE, 0);
+		gtk_container_add((GtkContainer *) window, vBox);
 
 		/* Menubar */
 		menubar = gtk_menu_bar_new();
@@ -172,26 +155,26 @@ int main(int argc, char **argv) {
 		g_signal_connect(quitButton, "activate", G_CALLBACK(finish), 0);
 
 		/* TicTacToe Grid */
-		board = gtk_grid_new();
+		board = (GtkGrid *) gtk_grid_new();
 		gtk_grid_set_row_homogeneous(board, gtk_true());
 		gtk_grid_set_column_homogeneous(board, gtk_true());
-		gtk_container_add(GTK_CONTAINER(vBox), board);
+		gtk_container_add(GTK_CONTAINER(vBox), (GtkWidget *) board);
 
 		/* TicTacToe Turn Indicator */
-		label = gtk_label_new(NULL);
-		gtk_grid_attach(board, label, 0, 0, 3, 1);
+		label = (GtkLabel *) gtk_label_new(NULL);
+		gtk_grid_attach(board, (GtkWidget *) label, 0, 0, 3, 1);
 
 		/* TicTacToe Cells */
 		for(i = 0; i < 9; i++) {
-			cells[i].button = gtk_button_new();
+			cells[i].button = (GtkButton *) gtk_button_new();
 			cells[i].index = i;
 			cells[i].handler = g_signal_connect(cells[i].button, "clicked", G_CALLBACK(clickEvent), &cells[i]);
 			sprintf(labelText, "%s/share/gtktactoe/sprites/empty.png", PATH);
 			gtk_button_set_image(cells[i].button, gtk_image_new_from_file(labelText));
-			gtk_grid_attach(board, cells[i].button, i % 3, (i / 3) + 1, 1, 1);
+			gtk_grid_attach(board, (GtkWidget *) cells[i].button, i % 3, (i / 3) + 1, 1, 1);
 		}
 
-		gtk_widget_show_all(window);
+		gtk_widget_show_all((GtkWidget *) window);
 
 		if(VERBOSE) printf("DONE\n");
 
@@ -201,7 +184,7 @@ int main(int argc, char **argv) {
 
 		/* Show the window */
 		if(VERBOSE) printf("DONE\nLaunching %s\n", argv[0]);
-		gtk_widget_show(window);
+		gtk_widget_show((GtkWidget *) window);
 
 		/* Main loop */
 		while(1) {
@@ -224,7 +207,7 @@ int main(int argc, char **argv) {
 					button = cells[index].button;
 
 					gtk_button_set_image(button, gtk_image_new_from_file(labelText));
-					gtk_widget_set_sensitive(button, FALSE);
+					gtk_widget_set_sensitive((GtkWidget *) button, FALSE);
 
 				} else if(checkForWin() == ' ' && thereIsAGameInProgress) continue;
 				/* if checkForWin() != ' ', then the game has ended */
@@ -236,7 +219,7 @@ int main(int argc, char **argv) {
 					displayVictor(label);
 
 					/* Turn off the sensitivity of the cells */
-					for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, FALSE);
+					for(i = 0; i < 9; i++) gtk_widget_set_sensitive((GtkWidget *) cells[i].button, FALSE);
 
 					/* Wait for the newGame event to be called */
 					while(NEWGAME == 0) gtk_main_iteration();
@@ -249,7 +232,7 @@ int main(int argc, char **argv) {
 				}
 
 				/* Make the cells sensitive again */
-				for(i = 0; i < 9; i++) gtk_widget_set_sensitive(cells[i].button, TRUE);
+				for(i = 0; i < 9; i++) gtk_widget_set_sensitive((GtkWidget *) cells[i].button, TRUE);
 
 				/* Reset */
 				if(CHECKBOX) COMPUTER = 1;
@@ -269,91 +252,4 @@ int main(int argc, char **argv) {
 	}
 
 	return 0;
-}
-
-static void displayVictor(GtkLabel *label) {
-	char victor = checkForWin();
-	char labelText[8];
-
-	if(victor == 't') {
-		if(VERBOSE) printf("Tie!");
-		gtk_label_set_text(label, "Tie!");
-	} else {
-		if(VERBOSE) printf("%c's won!\n", toupper(victor));
-		sprintf(labelText, "%c's won!", toupper(victor));
-		gtk_label_set_text(label, labelText);
-	}
-
-	return;
-}
-
-static void clickEvent(GtkWidget *emitter, struct Cell *cell) {
-	char player;
-	char filename[50];
-	int index, row, col;
-	GtkButton *button;
-
-	/* We don't want the player to accidentally play on the computer's turn */
-	if(COMPUTER) if(checkTurn() == 'o') return;
-
-	player = toupper(checkTurn());
-	index = cell->index;
-	button = cell->button;
-	row = index / 3;
-	col = index % 3;
-
-	if(DEBUG) printf("Button %d was pressed\n", index);
-
-	if(selectSquare(row, col)) {
-		if(VERBOSE) printf("%c claims row %d, column %d\n", player, row, col);
-		if(VERBOSE) printf("It is now %c's turn\n", toupper(checkTurn()));
-
-		sprintf(filename, "%s/share/gtktactoe/sprites/%c.png", PATH, player);
-		if(DEBUG) printf("Setting button %d's image to %s\n", index, filename);
-		gtk_button_set_image(button, gtk_image_new_from_file(filename));
-		gtk_widget_set_sensitive(button, FALSE);
-	}
-
-	return;
-}
-
-static void newGameEvent(GtkWidget *emitter) {
-	NEWGAME = 1;
-
-	return;
-}
-
-static void checkboxEvent(GtkWidget *emitter) {
-	/* Flip between 0 and 1 */
-	CHECKBOX = (++CHECKBOX) % 2;
-
-	return;
-}
-
-static void displayHelp(char *name) {
-	printf("Usage: %s [-w] [-h] [OPTIONS]...\n", name);
-	printf("Plays %s, a GTK+ TicTacToe game\n", name);
-	printf("\n  -?. --help\t\tdisplay this help and exit\n");
-	printf("  -V, --version\t\toutput version information and exit\n");
-	printf("  -v, --verbose\t\trun with maximum verbosity\n");
-	printf("  -D, --debug\t\trun in debugging mode\n");
-
-	return;
-}
-
-static void displayVersion(char *name) {
-	printf("%s %d.%d.%d\n\n", name, VERSION, MAJ_REV, MIN_REV);
-	printf("Copyright (C) 2013 Mason Fabel\n");
-	printf("License GPLv2+: GNU GPL version 2 or latter <http://gnu.org/licenses/glp/html>\n");
-	printf("This is free software: you are free to change and redistribute it.\n");
-	printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
-	printf("Written by Mason Fabel\n");
-
-	return;
-}
-
-static void finish(int sig) {
-	if(VERBOSE && sig == 0) printf("Closing GTK...DONE\n");
-	if(DEBUG) fprintf(stdout, "SIGNAL: %d\n", sig);
-	exit(0);
 }

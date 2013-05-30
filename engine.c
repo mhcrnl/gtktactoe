@@ -75,7 +75,8 @@ int selectSquare(int row, int col) {
 		board[row][col] = turn;
 
 		/* Increment the turn (flip between 0 and 1) */
-		turn = (++turn) % 2;
+		turn++;
+		turn = turn % 2;
 
 		/* Success! */
 		result = 1;

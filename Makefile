@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -w -ansi -pedantic -Wall -Wextra -D__USE_FIXED_PROTOTYPES__ -ggdb3
+CFLAGS = -ansi -pedantic -Wall -Wextra -D__USE_FIXED_PROTOTYPES__ -ggdb3
 GTKFLAGS = -Wl,--export-dynamic `pkg-config --cflags gtk+-3.0 gmodule-export-2.0` `pkg-config --libs gtk+-3.0 gmodule-export-2.0`
-OBJ = gtktactoe.o engine.o
+OBJ = gtktactoe.o libgtktactoe.o engine.o
 PREFIX_QUOTED = '"/usr"'
 PREFIX = /usr
 
@@ -16,10 +16,13 @@ rebuild :
 gtktactoe : $(OBJ)
 	$(CC) $(CFLAGS) -o gtktactoe $(OBJ) $(GTKFLAGS)
 
-gtktactoe.o : gtktactoe.c engine.h
+gtktactoe.o : gtktactoe.c libgtktactoe.h engine.h
 	$(CC) $(CFLAGS) -DPATH=$(PREFIX_QUOTED) -c gtktactoe.c $(GTKFLAGS)
 
 engine.o : engine.c engine.h
+
+libgtktactoe.o : libgtktactoe.c libgtktactoe.h engine.h
+	$(CC) -DPATH=$(PREFIX_QUOTED) -c libgtktactoe.c $(GTKFLAGS)
 
 install : gtktactoe
 	test -d $(PREFIX)/bin || mkdir -p $(PREFIX)/bin

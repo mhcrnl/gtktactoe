@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
 		g_signal_connect(window, "delete-event", G_CALLBACK(finish), 0);
 
 		/* VBox */
-		vBox = gtk_box_new(FALSE, 0);
+		vBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 		gtk_container_add((GtkContainer *) window, vBox);
 
 		/* Menubar */

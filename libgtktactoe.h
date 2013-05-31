@@ -23,7 +23,7 @@
 #ifndef _LIBGTKTACTOE_H_
 #define _LIBGTKTACTOE_H_
 
-extern struct Cell;
+struct Cell;
 
 void finish(int sig);
 void clickEvent(GtkWidget *emitter, struct Cell *cell);

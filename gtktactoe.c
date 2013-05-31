@@ -29,20 +29,19 @@
 #include "engine.h"
 #include "libgtktactoe.h"
 
-/* External Variables */
-extern const int VERSION;
-extern const int MAJ_REV;
-extern const int MIN_REV;
-extern int VERBOSE;
-extern int DEBUG;
-extern int CHECKBOX;
-extern int COMPUTER;
-extern int NEWGAME;
-extern struct Cell {
-	GtkButton *button;
-	gulong handler;
-	int index;
-};
+/* Set version information */
+const int VERSION = 0;
+const int MAJ_REV = 1;
+const int MIN_REV = 2;
+
+/* Set application flags */
+int VERBOSE = 0;
+int DEBUG = 0;
+
+/* Global Variables */
+int CHECKBOX = 0;
+int COMPUTER = 0;
+int NEWGAME = 0;
 
 int main(int argc, char **argv) {
 	/* Declare internal variables */

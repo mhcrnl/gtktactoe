@@ -23,7 +23,11 @@
 #ifndef _LIBGTKTACTOE_H_
 #define _LIBGTKTACTOE_H_
 
-struct Cell;
+struct Cell {
+	GtkButton *button;
+	gulong handler;
+	int index;
+};
 
 void finish(int sig);
 void clickEvent(GtkWidget *emitter, struct Cell *cell);

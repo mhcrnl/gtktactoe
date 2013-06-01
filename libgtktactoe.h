@@ -36,5 +36,6 @@ void checkboxEvent(GtkWidget *emitter);
 void displayHelp(char *name);
 void displayVersion(char *name);
 void displayVictor(GtkLabel *label);
+void spawnAboutDialog(GtkWidget *emitter, GtkAboutDialog *aboutDialog);
 
 #endif /* _LIBGTKTACTOE_H_ */

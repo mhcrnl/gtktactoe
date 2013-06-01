@@ -60,6 +60,10 @@ int main(int argc, char **argv) {
 	GtkWidget *newGameButton;
 	GtkWidget *checkbox;
 	GtkWidget *quitButton;
+	GtkWidget *help;
+	GtkWidget *helpmenu;
+	GtkWidget *aboutButton;
+	GtkAboutDialog *aboutDialog;
 	GtkGrid *board;
 	GtkLabel *label;
 	GtkButton *button;
@@ -136,22 +140,38 @@ int main(int argc, char **argv) {
 		accel_group = gtk_accel_group_new();
 		gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
 
+		/* File */
 		file = gtk_menu_item_new_with_mnemonic("_Game");
 		newGameButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, accel_group);
 		checkbox = gtk_check_menu_item_new_with_label("Computer Game");
 		quitButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, accel_group);
 
+		/* Help */
+		helpmenu = gtk_menu_new();
+		help = gtk_menu_item_new_with_mnemonic("_Help");
+		aboutButton = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, accel_group);
+
+		/* File */
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
 		gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), newGameButton);
 		gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), checkbox);
 		gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), gtk_separator_menu_item_new());
 		gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), quitButton);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
+		gtk_menu_item_set_submenu(GTK_MENU_ITEM(help), helpmenu);
+
+		/* Help */
+		gtk_menu_shell_append(GTK_MENU_SHELL(helpmenu), aboutButton);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help);
+
+		/* Add the menubar to the window */
 		gtk_box_pack_start(GTK_BOX(vBox), menubar, FALSE, FALSE, 0);
 
+		/* Events for the menubar */
 		g_signal_connect(newGameButton, "activate", G_CALLBACK(newGameEvent), 0);
 		g_signal_connect(checkbox, "activate", G_CALLBACK(checkboxEvent), 0);
 		g_signal_connect(quitButton, "activate", G_CALLBACK(finish), 0);
+		g_signal_connect(aboutButton, "activate", G_CALLBACK(spawnAboutDialog), &aboutDialog);
 
 		/* TicTacToe Grid */
 		board = (GtkGrid *) gtk_grid_new();

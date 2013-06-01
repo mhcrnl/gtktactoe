@@ -123,3 +123,25 @@ void finish(int sig) {
 	if(DEBUG) fprintf(stdout, "SIGNAL: %d\n", sig);
 	exit(0);
 }
+
+void spawnAboutDialog(GtkWidget *emitter, GtkAboutDialog *aboutDialog) {
+	char version[5];
+	char *authors[] = {"Mason Fabel", "David Heaney", NULL};
+ 
+	sprintf(version, "%d.%d.%d", VERSION, MAJ_REV, MIN_REV);
+ 
+	/* Create and configure the dialog */
+	aboutDialog = (GtkAboutDialog *) gtk_about_dialog_new();
+	gtk_about_dialog_set_program_name(aboutDialog, "GTKTacToe");
+	gtk_about_dialog_set_version(aboutDialog, version);
+	gtk_about_dialog_set_copyright(aboutDialog, "Copyright (C) 2013 - Mason Fabel");
+	gtk_about_dialog_set_license_type(aboutDialog, GTK_LICENSE_GPL_2_0);
+	gtk_about_dialog_set_website(aboutDialog, "https://github.com/mfabel/gtktactoe");
+	gtk_about_dialog_set_authors(aboutDialog, (const gchar **) authors);
+ 
+	/* Run the dialog and destroy it */
+	gtk_dialog_run((GtkDialog *) aboutDialog);
+	gtk_widget_destroy((GtkWidget *) aboutDialog);
+ 
+	return;
+}

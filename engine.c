@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Dialogues; if not, write to the Free Software
+ * along with GTKTacToe; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor,
  * Boston, MA  02110-1301  USA
  */
@@ -28,18 +28,15 @@
 static const char turnChars[3] = {'x', 'o', ' '};
 
 static int turn = 0;
+static int firstTurn = 1;
+static int secondTurn = 0;
 static int board[3][3] = { {2, 2, 2}, {2, 2, 2}, {2, 2, 2} };
+
+static const int X = 0;
+static const int O = 1;
 
 static int isTaken(int row, int col) {
 	return board[row][col] != 2;
-}
-
-static int isX(int row, int col) {
-	return board[row][col] == 0;
-}
-
-static int isO(int row, int col) {
-	return board[row][col] == 1;
 }
 
 void initEngine(void) {
@@ -48,6 +45,10 @@ void initEngine(void) {
 
 	/* Reset turn counter */
 	turn = 0;
+
+	/* Rest computer's turn counter */
+	firstTurn = 1;
+	secondTurn = 0;
 
 	/* Reset board */
 	for(x = 0; x < 3; x++) {
@@ -74,7 +75,8 @@ int selectSquare(int row, int col) {
 		board[row][col] = turn;
 
 		/* Increment the turn (flip between 0 and 1) */
-		turn = (++turn) % 2;
+		turn++;
+		turn = turn % 2;
 
 		/* Success! */
 		result = 1;
@@ -87,7 +89,7 @@ int selectSquare(int row, int col) {
 }
 
 char checkForWin(void) {
-	int i = 0;
+	int x, y, i = 0;
 	char win = ' ';
 
 	/* Loop until a win is found or all rows and columns have been checked */
@@ -109,5 +111,131 @@ char checkForWin(void) {
 		else if((board[2][0] != 2) && (board[2][0] == board[1][1]) && (board[2][0] == board [0][2])) win = turnChars[board[2][0]];
 	}
 
+	/* Check for tie if necessary */
+	if(win == ' ') {
+		for(x = 0; x < 3; x++) {
+			for(y = 0; y < 3; y++) 
+				if(board[x][y] == 2) return win;
+		}
+
+		win = 't';
+	}
+
 	return win;
+}
+
+static int indexToBoardValue(int index) {
+	int row, col;
+
+	row = index / 3;
+	col = index % 3;
+
+	return board[row][col];
+}
+
+static int winPossibility(int player) {
+	int i;
+	/* Horizontal Check */
+	for(i = 0; i < 7; i = i + 3) {
+		if((indexToBoardValue(i) == 2) && (indexToBoardValue(i + 1) == player) && (indexToBoardValue(i + 2) == player)) return i;
+		if((indexToBoardValue(i) == player) && (indexToBoardValue(i + 1) == 2) && (indexToBoardValue(i + 2) == player)) return i + 1;
+		if((indexToBoardValue(i) == player) && (indexToBoardValue(i + 1) == player) && (indexToBoardValue(i + 2) == 2)) return i + 2;
+	}
+
+	/* Vertical Check */
+	for(i = 0; i < 3; i++) {
+		if((indexToBoardValue(i) == 2) && (indexToBoardValue(i + 3) == player) && (indexToBoardValue(i + 6) == player)) return i;
+		if((indexToBoardValue(i) == player) && (indexToBoardValue(i + 3) == 2) && (indexToBoardValue(i + 6) == player)) return i + 3;
+		if((indexToBoardValue(i) == player) && (indexToBoardValue(i + 3) == player) && (indexToBoardValue(i + 6) == 2)) return i + 6;
+	}
+
+	/* Diagonal Check */
+	/* (There is almost certainly a better way to do this) */
+
+	/* Top left to bottom right */
+	if((indexToBoardValue(0) == 2) && (indexToBoardValue(4) == player) && (indexToBoardValue(8) == player)) return 0;
+	if((indexToBoardValue(0) == player) && (indexToBoardValue(4) == 2) && (indexToBoardValue(8) == player)) return 4;
+	if((indexToBoardValue(0) == player) && (indexToBoardValue(4) == player) && (indexToBoardValue(8) == 2)) return 8;
+
+	/* Top right to botton left */
+	if((indexToBoardValue(2) == 2) && (indexToBoardValue(4) == player) && (indexToBoardValue(6) == player)) return 2;
+	if((indexToBoardValue(2) == player) && (indexToBoardValue(4) == 2) && (indexToBoardValue(6) == player)) return 4;
+	if((indexToBoardValue(2) == player) && (indexToBoardValue(4) == player) && (indexToBoardValue(6) == 2)) return 6;
+
+	return -1;
+}
+
+int rowColToIndex(int row, int col) {
+	int board[3][3] = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
+	return board[row][col];
+}
+
+int getBestIndex(void) {
+	int index, row, col;
+
+	/* Check to see if the computer can win on this turn */
+	index = winPossibility(O);
+
+	/* If the computer cannot win, check to see if the player can win on his/her next turn */
+	if(index == -1) index = winPossibility(X);
+
+	/* Even if neither the computer of the player can win, the computer must not waste its turn */
+	if(index == -1) {
+		if((indexToBoardValue(1) == X) && (indexToBoardValue(3) == X))
+			if(!isTaken(0, 0)) index = 0;
+	}
+
+	if(index == -1) {
+		if((indexToBoardValue(1) == X) && (indexToBoardValue(5) == X))
+			if(!isTaken(0, 2)) index = 2;
+	}
+
+	if(index == -1) {
+		if((indexToBoardValue(7) == X) && (indexToBoardValue(5) == X))
+			if(!isTaken(2, 2)) index = 8;
+	}
+
+	if(index == -1) {
+		if((indexToBoardValue(7) == X) && (indexToBoardValue(3) == X))
+			if(!isTaken(2, 0)) index = 6;
+	}
+
+	if(index == -1) {
+		if((indexToBoardValue(0) == X) && (indexToBoardValue(4) == X)) {
+			if(!isTaken(0, 2)) index = 2;
+			else if(!isTaken(2, 0)) index = 6;
+		}
+	}
+
+	/* Wasting the first and second turns can be fatal */
+	if(firstTurn) {
+		/* Try to get the middle square. */
+		if(isTaken(1, 1)) {
+			/* return the last square */
+			index = 8;
+		} else index = 4;
+
+		firstTurn = 0;
+		secondTurn = 1;
+
+	} else if(secondTurn) {
+		if(board[1][1] == O && index == -1) {
+			if(!isTaken(1, 0) && !isTaken(1, 2)) index = 3;
+			else index = 1;
+		}
+
+		secondTurn = 0;
+	}
+
+	/* Randomly select a square if there is nothing that *should* be done */
+	if(index == -1) {
+		do {
+			row = rand() % 3;
+			col = rand() % 3;
+
+			if(!isTaken(row, col)) index = rowColToIndex(row, col);
+		} while(index == -1);
+	}
+
+	return index;
 }

@@ -1,5 +1,5 @@
 /*
- * engine.h
+ * libgtktactoe.h
  * This file is part of GTKTacToe
  *
  * Copyright (C) 2013 - Mason Fabel
@@ -20,13 +20,22 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef _ENGINE_H_
-#define _ENGINE_H_
+#ifndef _LIBGTKTACTOE_H_
+#define _LIBGTKTACTOE_H_
 
-void initEngine(void);
-char checkForWin(void);
-char checkTurn(void);
-int selectSquare(int row, int col);
-int getBestIndex(void);
+struct Cell {
+	GtkButton *button;
+	gulong handler;
+	int index;
+};
 
-#endif /* _ENGINE_H_ */
+void finish(int sig);
+void clickEvent(GtkWidget *emitter, struct Cell *cell);
+void newGameEvent(GtkWidget *emitter);
+void checkboxEvent(GtkWidget *emitter);
+void displayHelp(char *name);
+void displayVersion(char *name);
+void displayVictor(GtkLabel *label);
+void spawnAboutDialog(GtkWidget *emitter, GtkAboutDialog *aboutDialog);
+
+#endif /* _LIBGTKTACTOE_H_ */

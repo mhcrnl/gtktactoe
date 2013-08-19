@@ -60,4 +60,5 @@ Authors
 -------
 
 Written by @mfabel in February, 2013.
+
 Greatly expanded by @dejay in May, 2013.
